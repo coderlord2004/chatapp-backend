@@ -1,0 +1,33 @@
+logging:
+  level:
+    org.hibernate.SQL: "TRACE"
+
+spring:
+  application:
+    name: "chatapp"
+
+  datasource:
+    url: "jdbc:sqlite:db.sqlite3"
+    driver-class-name: "org.sqlite.JDBC"
+
+  jpa:
+    hibernate:
+      ddl-auto: "update"
+
+    open-in-view: false
+
+  output:
+    ansi:
+      enabled: ALWAYS
+
+server:
+  port: "${PORT:8080}"
+
+jwts:
+  public-key: "classpath:certs/jwts/public.pem"
+  private-key: "classpath:certs/jwts/private.pem"
+
+  access-token-lifetime: PT30M # 30 minutes
+  refresh-token-lifetime: P30D # 30 days
+
+  secret-key: "${JWT_SECRET}"
