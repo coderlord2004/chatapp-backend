@@ -1,3 +1,7 @@
 package com.group4.chatapp.dtos.messages;
 
-public record MessageReceiveDto(String sender, String message) {}
+public record MessageReceiveDto(
+    long roomId,
+    String sender,
+    String message
+) {}

@@ -52,10 +52,13 @@ public class ChatRoom {
     @PreUpdate
     @PrePersist
     private void checkAvatarFileType() {
-
         if (avatar != null && !avatar.isImage()) {
-            throw new IllegalStateException("Avatar must be an image");
+            throw new IllegalStateException("Avatar must be an image.");
         }
+    }
+
+    public String getSocketPath() {
+        return String.format("/queue/chat/%d", id);
     }
 
     enum ChatRoomType {

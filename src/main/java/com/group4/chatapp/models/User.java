@@ -50,9 +50,12 @@ public class User implements UserDetails {
     @PreUpdate
     @PrePersist
     private void checkAvatarFileType() {
-
         if (avatar != null && !avatar.isImage()) {
             throw new IllegalStateException("Avatar must be an image");
         }
+    }
+
+    public boolean inChatRoom(ChatRoom room) {
+        return room.getMembers().contains(this);
     }
 }

@@ -5,9 +5,6 @@ import jakarta.validation.constraints.NotEmpty;
 public record MessageSendDto(
 
     @NotEmpty
-    String receiver,
-
-    @NotEmpty
     String message
 
 ) {}
