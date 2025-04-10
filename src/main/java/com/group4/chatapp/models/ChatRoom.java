@@ -23,8 +23,8 @@ public class ChatRoom {
     @Column(nullable = false)
     private String name;
 
-    @Column
     @Nullable
+    @ManyToOne
     private File avatar;
 
     @ManyToMany
@@ -36,8 +36,6 @@ public class ChatRoom {
     @CreationTimestamp
     private Timestamp sentOn;
 
-    @PreUpdate
-    @PrePersist
     private void checkMemberSize() {
 
         if (type == ChatRoomType.DUO && members.size() != 2) {
@@ -49,12 +47,17 @@ public class ChatRoom {
         }
     }
 
-    @PreUpdate
-    @PrePersist
     private void checkAvatarFileType() {
         if (avatar != null && !avatar.isImage()) {
             throw new IllegalStateException("Avatar must be an image.");
         }
+    }
+
+    @PreUpdate
+    @PrePersist
+    private void performChecks() {
+        checkAvatarFileType();
+        checkMemberSize();
     }
 
     public String getSocketPath() {

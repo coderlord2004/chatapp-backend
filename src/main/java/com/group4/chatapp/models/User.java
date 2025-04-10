@@ -29,7 +29,7 @@ public class User implements UserDetails {
     private String password;
 
     @Nullable
-    @OneToOne
+    @ManyToOne
     private File avatar;
 
     @Override
