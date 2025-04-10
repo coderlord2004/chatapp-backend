@@ -28,6 +28,10 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private String password;
 
+    @Nullable
+    @OneToOne
+    private File avatar;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of();
@@ -35,10 +39,20 @@ public class User implements UserDetails {
 
     @Override
     public boolean equals(@Nullable Object obj) {
+
         if (obj instanceof User user) {
             return Objects.equals(this.id, user.id);
         } else {
             return false;
+        }
+    }
+
+    @PreUpdate
+    @PrePersist
+    private void checkAvatarFileType() {
+
+        if (avatar != null && !avatar.isImage()) {
+            throw new IllegalStateException("Avatar must be an image");
         }
     }
 }
