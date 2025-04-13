@@ -22,6 +22,8 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-websocket")
 
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.6")
+
     developmentOnly("org.springframework.boot:spring-boot-devtools")
 
     compileOnly("org.projectlombok:lombok")
