@@ -11,6 +11,7 @@ import com.group4.chatapp.repositories.MessageRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.lang.Nullable;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -27,14 +28,12 @@ public class MessageService {
     private final UserService userService;
     private final SimpMessagingTemplate messagingTemplate;
 
-    private void sendToMembers(User sender, ChatRoom chatRoom, String message) {
+    private void sendToMembers(ChatRoom chatRoom, ChatMessage savedMessage) {
 
+        var sender = savedMessage.getSender();
         var socketPath = chatRoom.getSocketPath();
-        var messageReceiveDto = new MessageReceiveDto(
-            chatRoom.getId(),
-            sender.getUsername(),
-            message
-        );
+
+        var messageReceiveDto = new MessageReceiveDto(savedMessage);
 
         chatRoom.getMembers()
             .parallelStream()
@@ -48,25 +47,16 @@ public class MessageService {
             );
     }
 
-    private void saveMessage(User user, ChatRoom chatRoom, String message) {
-
-        var newMessage = ChatMessage.builder()
-            .room(chatRoom)
-            .sender(user)
-            .message(message)
-            .attachments(List.of()) // TODO: handle message with attachments
-            .build();
-
-        messageRepository.save(newMessage);
+    private ChatMessage saveMessage(User user, ChatRoom chatRoom, MessageSendDto dto) {
+        var newMessage = dto.toMessage(chatRoom, user);
+        return messageRepository.save(newMessage);
     }
 
-    @Transactional
-    public void sendMessage(long roomId, MessageSendDto dto) {
+    private ChatRoom receiveChatRoomAndCheck(long id, @Nullable User user) {
 
-        var chatRoom = chatRoomRepository.findById(roomId)
+        var chatRoom = chatRoomRepository.findById(id)
             .orElseThrow(ChatRoomNotFoundException::new);
 
-        var user = userService.getUserByContext().orElse(null);
         if (user == null || !user.inChatRoom(chatRoom)) {
             throw new ResponseStatusException(
                 HttpStatus.FORBIDDEN,
@@ -74,8 +64,32 @@ public class MessageService {
             );
         }
 
-        // TODO: can be run asynchronously
-        saveMessage(user, chatRoom, dto.message());
-        sendToMembers(user, chatRoom, dto.message());
+        return chatRoom;
+    }
+
+    @SuppressWarnings("UnusedReturnValue")
+    private ChatRoom receiveChatRoomAndCheck(long id) {
+        var user = userService.getUserByContext().orElse(null);
+        return receiveChatRoomAndCheck(id, user);
+    }
+
+    @Transactional
+    public void sendMessage(long roomId, MessageSendDto dto) {
+
+        var user = userService.getUserByContext().orElse(null);
+        var chatRoom = receiveChatRoomAndCheck(roomId, user);
+
+        var savedMessage = saveMessage(user, chatRoom, dto);
+        sendToMembers(chatRoom, savedMessage);
+    }
+
+    @Transactional
+    public List<MessageReceiveDto> getMessages(long roomId) {
+
+        receiveChatRoomAndCheck(roomId);
+
+        return messageRepository.findByRoomId(roomId)
+            .map(MessageReceiveDto::new)
+            .toList();
     }
 }

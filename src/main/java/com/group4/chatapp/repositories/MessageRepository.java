@@ -5,7 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import java.util.Collection;
+import java.util.stream.Stream;
 
 @Repository
 public interface MessageRepository extends JpaRepository<ChatMessage, Long> {
@@ -16,5 +16,5 @@ public interface MessageRepository extends JpaRepository<ChatMessage, Long> {
         where c.room.id = ?1
         order by c.sentOn
     """)
-    Collection<ChatMessage> findByRoomId(long id);
+    Stream<ChatMessage> findByRoomId(long id);
 }

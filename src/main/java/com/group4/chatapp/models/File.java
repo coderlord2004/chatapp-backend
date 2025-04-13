@@ -26,7 +26,7 @@ public class File {
         return type == FileType.IMAGE;
     }
 
-    enum FileType {
+    public enum FileType {
         IMAGE, OTHERS
     }
 }
