@@ -12,7 +12,7 @@ public class HelloController {
 
     private final UserService userService;
 
-    @GetMapping("/api/hello/")
+    @GetMapping("/api/v1/hello/")
     public GreetingDto greeting() {
 
         var user = userService.getUserByContext();
