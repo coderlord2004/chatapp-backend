@@ -63,7 +63,7 @@ public class WebSocketAuthenticationInterceptor implements ChannelInterceptor {
 
         try {
             addUserToAccessor(message);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             log.error("Failed to detect accessor!", e);
             throw e;
         }

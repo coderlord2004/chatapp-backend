@@ -2,6 +2,7 @@ package com.group4.chatapp.services;
 
 import com.group4.chatapp.dtos.messages.MessageReceiveDto;
 import com.group4.chatapp.dtos.messages.MessageSendDto;
+import com.group4.chatapp.exceptions.ChatRoomNotFoundException;
 import com.group4.chatapp.models.ChatMessage;
 import com.group4.chatapp.models.ChatRoom;
 import com.group4.chatapp.models.User;
@@ -25,13 +26,6 @@ public class MessageService {
 
     private final UserService userService;
     private final SimpMessagingTemplate messagingTemplate;
-
-    private RuntimeException chatRoomNotFoundException() {
-        return new ResponseStatusException(
-            HttpStatus.NOT_FOUND,
-            "chatRoom with provided id not found!"
-        );
-    }
 
     private void sendToMembers(User sender, ChatRoom chatRoom, String message) {
 
@@ -70,7 +64,7 @@ public class MessageService {
     public void sendMessage(long roomId, MessageSendDto dto) {
 
         var chatRoom = chatRoomRepository.findById(roomId)
-            .orElseThrow(this::chatRoomNotFoundException);
+            .orElseThrow(ChatRoomNotFoundException::new);
 
         var user = userService.getUserByContext().orElse(null);
         if (user == null || !user.inChatRoom(chatRoom)) {
