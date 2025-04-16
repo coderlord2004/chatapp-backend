@@ -11,6 +11,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
+import org.springframework.web.ErrorResponseException;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
@@ -62,5 +63,10 @@ public class UserService {
     public Optional<User> getUserByContext() {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         return getUserByAuthentication(authentication);
+    }
+
+    public User getUserOrThrows() {
+        return getUserByContext()
+            .orElseThrow(() -> new ErrorResponseException(HttpStatus.UNAUTHORIZED));
     }
 }

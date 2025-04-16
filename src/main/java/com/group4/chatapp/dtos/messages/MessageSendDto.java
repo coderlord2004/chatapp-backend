@@ -16,10 +16,10 @@ public record MessageSendDto(
 
     public ChatMessage toMessage(ChatRoom room, User sender) {
         return ChatMessage.builder()
-                .room(room)
-                .sender(sender)
-                .message(this.message)
-                .attachments(List.of()) // TODO: handle message with attachments
-                .build();
+            .room(room)
+            .sender(sender)
+            .message(this.message)
+            .attachments(List.of()) // TODO: handle message with attachments
+            .build();
     }
 }

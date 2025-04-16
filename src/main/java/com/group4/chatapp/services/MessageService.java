@@ -2,7 +2,7 @@ package com.group4.chatapp.services;
 
 import com.group4.chatapp.dtos.messages.MessageReceiveDto;
 import com.group4.chatapp.dtos.messages.MessageSendDto;
-import com.group4.chatapp.exceptions.ChatRoomNotFoundException;
+import com.group4.chatapp.exceptions.ApiException;
 import com.group4.chatapp.models.ChatMessage;
 import com.group4.chatapp.models.ChatRoom;
 import com.group4.chatapp.models.User;
@@ -55,7 +55,10 @@ public class MessageService {
     private ChatRoom receiveChatRoomAndCheck(long id, @Nullable User user) {
 
         var chatRoom = chatRoomRepository.findById(id)
-            .orElseThrow(ChatRoomNotFoundException::new);
+            .orElseThrow(() -> new ApiException(
+                HttpStatus.NOT_FOUND,
+                "Chatroom with provided id not found"
+            ));
 
         if (user == null || !user.inChatRoom(chatRoom)) {
             throw new ResponseStatusException(
@@ -69,14 +72,14 @@ public class MessageService {
 
     @SuppressWarnings("UnusedReturnValue")
     private ChatRoom receiveChatRoomAndCheck(long id) {
-        var user = userService.getUserByContext().orElse(null);
+        var user = userService.getUserOrThrows();
         return receiveChatRoomAndCheck(id, user);
     }
 
     @Transactional
     public void sendMessage(long roomId, MessageSendDto dto) {
 
-        var user = userService.getUserByContext().orElse(null);
+        var user = userService.getUserOrThrows();
         var chatRoom = receiveChatRoomAndCheck(roomId, user);
 
         var savedMessage = saveMessage(user, chatRoom, dto);

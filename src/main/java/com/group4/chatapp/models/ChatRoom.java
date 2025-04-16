@@ -30,6 +30,7 @@ public class ChatRoom {
     @ManyToMany
     private Set<User> members;
 
+    @Column(nullable = false)
     @Enumerated(EnumType.ORDINAL)
     private ChatRoomType type;
 
