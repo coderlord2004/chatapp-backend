@@ -5,7 +5,7 @@ import org.springframework.web.ErrorResponseException;
 
 public class ApiException extends ErrorResponseException {
     public ApiException(HttpStatus status, String title) {
-        super(HttpStatus.NOT_FOUND);
+        super(status);
         this.setTitle(title);
     }
 }
