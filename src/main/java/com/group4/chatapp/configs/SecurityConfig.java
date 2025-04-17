@@ -39,7 +39,10 @@ public class SecurityConfig {
             .csrf(CsrfConfigurer::disable)
             .authorizeHttpRequests(request -> {
 
-                request.requestMatchers("/api/messages/**")
+                request.requestMatchers(
+                        "/api/v1/messages/**",
+                        "/api/v1/invitations/**"
+                    )
                     .authenticated();
 
                 request.anyRequest().permitAll();

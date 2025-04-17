@@ -20,7 +20,6 @@ public class ChatRoom {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
     private String name;
 
     @Nullable
@@ -32,18 +31,18 @@ public class ChatRoom {
 
     @Column(nullable = false)
     @Enumerated(EnumType.ORDINAL)
-    private ChatRoomType type;
+    private Type type;
 
     @CreationTimestamp
-    private Timestamp sentOn;
+    private Timestamp createdOn;
 
     private void checkMemberSize() {
 
-        if (type == ChatRoomType.DUO && members.size() != 2) {
+        if (type == Type.DUO && members.size() != 2) {
             throw new IllegalStateException("DUO room must have exactly 2 members.");
         }
 
-        if (type == ChatRoomType.GROUP && members.size() < 3) {
+        if (type == Type.GROUP && members.size() < 3) {
             throw new IllegalStateException("GROUP room must have at least 3 members.");
         }
     }
@@ -65,8 +64,7 @@ public class ChatRoom {
         return String.format("/queue/chat/%d", id);
     }
 
-    enum ChatRoomType {
-        DUO,
-        GROUP
+    public enum Type {
+        DUO, GROUP
     }
 }

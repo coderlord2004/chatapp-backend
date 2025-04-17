@@ -16,4 +16,12 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
         inner join c.members m where m.id = ?1
     """)
     List<ChatRoom> findByMembersId(long id);
+
+    @Query("""
+        select (count(c) > 0)
+        from ChatRoom c
+        inner join c.members members
+        where members.id = ?1 and c.id = ?2
+    """)
+    boolean userIsMemberInChatRoom(long userId, long roomId);
 }

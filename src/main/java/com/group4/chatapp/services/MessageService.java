@@ -11,7 +11,6 @@ import com.group4.chatapp.repositories.MessageRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.lang.Nullable;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -52,7 +51,7 @@ public class MessageService {
         return messageRepository.save(newMessage);
     }
 
-    private ChatRoom receiveChatRoomAndCheck(long id, @Nullable User user) {
+    private ChatRoom receiveChatRoomAndCheck(long id, User user) {
 
         var chatRoom = chatRoomRepository.findById(id)
             .orElseThrow(() -> new ApiException(
@@ -60,7 +59,8 @@ public class MessageService {
                 "Chatroom with provided id not found"
             ));
 
-        if (user == null || !user.inChatRoom(chatRoom)) {
+        var userInChatRoom = chatRoomRepository.userIsMemberInChatRoom(user.getId(), id);
+        if (!userInChatRoom) {
             throw new ResponseStatusException(
                 HttpStatus.FORBIDDEN,
                 "You aren't in this room!"
