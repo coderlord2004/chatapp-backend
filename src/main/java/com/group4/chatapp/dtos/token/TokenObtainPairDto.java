@@ -1,3 +1,18 @@
 package com.group4.chatapp.dtos.token;
 
-public record TokenObtainPairDto(String access, String refresh) {}
+import org.springframework.security.oauth2.jwt.Jwt;
+
+public record TokenObtainPairDto(
+
+    String access,
+    String refresh
+
+) {
+
+    public TokenObtainPairDto(Jwt access, Jwt refresh) {
+        this(
+            access.getTokenValue(),
+            refresh.getTokenValue()
+        );
+    }
+}

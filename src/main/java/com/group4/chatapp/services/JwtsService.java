@@ -56,8 +56,8 @@ public class JwtsService {
         );
 
         return new TokenObtainPairDto(
-            generateToken(authentication, accessTokenLifetime).getTokenValue(),
-            generateToken(authentication, refreshTokenLifetime).getTokenValue()
+            generateToken(authentication, accessTokenLifetime),
+            generateToken(authentication, refreshTokenLifetime)
         );
     }
 
