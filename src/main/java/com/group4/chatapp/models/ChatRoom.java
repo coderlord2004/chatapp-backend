@@ -20,6 +20,7 @@ public class ChatRoom {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Nullable
     private String name;
 
     @Nullable
@@ -62,6 +63,10 @@ public class ChatRoom {
 
     public String getSocketPath() {
         return String.format("/queue/chat/%d", id);
+    }
+
+    public boolean isChatGroup() {
+        return type == Type.GROUP;
     }
 
     public enum Type {
