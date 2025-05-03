@@ -32,7 +32,7 @@ public class InvitationController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public void sendInvitation(@Valid @RequestBody InvitationSendDto dto) {
-        invitationService.sendInvitation(dto.receiverUserName());
+        invitationService.sendInvitation(dto);
     }
 
     @PatchMapping("/{invitationId}")
