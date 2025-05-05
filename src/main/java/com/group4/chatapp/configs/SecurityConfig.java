@@ -18,6 +18,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationProvider;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
 
@@ -30,27 +33,26 @@ public class SecurityConfig {
 
     private User loadByUsername(String username) {
         return userRepository.findByUsername(username)
-            .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
-            .csrf(CsrfConfigurer::disable)
-            .authorizeHttpRequests(request -> {
+                .csrf(CsrfConfigurer::disable)
+                .authorizeHttpRequests(request -> {
 
-                request.requestMatchers(
-                        "/api/v1/messages/**",
-                        "/api/v1/invitations/**"
-                    )
-                    .authenticated();
+                    request.requestMatchers(
+                            "/api/v1/messages/**",
+                            "/api/v1/invitations/**")
+                            .authenticated();
 
-                request.anyRequest().permitAll();
+                    request.anyRequest().permitAll();
 
-            })
-            .httpBasic(Customizer.withDefaults())
-            .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.decoder(jwtDecoder)))
-            .build();
+                })
+                .httpBasic(Customizer.withDefaults())
+                .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.decoder(jwtDecoder)))
+                .build();
     }
 
     @Bean
@@ -77,5 +79,19 @@ public class SecurityConfig {
     @Bean
     public AuthenticationManager authenticationManager(List<AuthenticationProvider> providers) {
         return new ProviderManager(providers);
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        System.out.println("cau hinh cors");
+        CorsConfiguration config = new CorsConfiguration();
+        config.addAllowedOriginPattern("*");
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
+        config.setAllowedHeaders(List.of("*"));
+        config.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
     }
 }
