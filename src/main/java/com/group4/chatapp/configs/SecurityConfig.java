@@ -5,6 +5,7 @@ import com.group4.chatapp.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.ProviderManager;
@@ -18,7 +19,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationProvider;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Configuration
@@ -35,11 +38,26 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+
         return http
             .csrf(CsrfConfigurer::disable)
+
+            .cors(cors ->
+                cors.configurationSource(req -> {
+
+                    var configuration = new CorsConfiguration();
+
+                    Arrays.stream(HttpMethod.values())
+                        .forEach(configuration::addAllowedMethod);
+
+                    return configuration.applyPermitDefaultValues();
+                })
+            )
+
             .authorizeHttpRequests(request -> {
 
-                request.requestMatchers(
+                request
+                    .requestMatchers(
                         "/api/v1/messages/**",
                         "/api/v1/invitations/**"
                     )
@@ -48,6 +66,7 @@ public class SecurityConfig {
                 request.anyRequest().permitAll();
 
             })
+
             .httpBasic(Customizer.withDefaults())
             .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.decoder(jwtDecoder)))
             .build();
