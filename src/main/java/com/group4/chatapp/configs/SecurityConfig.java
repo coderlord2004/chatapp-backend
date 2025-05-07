@@ -33,37 +33,43 @@ public class SecurityConfig {
 
     private User loadByUsername(String username) {
         return userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+            .orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+
         return http
-                .csrf(CsrfConfigurer::disable)
-                .cors(cors ->
-                        cors.configurationSource(req -> {
+            .csrf(CsrfConfigurer::disable)
 
-                            var configuration = new CorsConfiguration();
+            .cors(cors ->
+                cors.configurationSource(req -> {
 
-                            Arrays.stream(HttpMethod.values())
-                                    .forEach(configuration::addAllowedMethod);
+                    var configuration = new CorsConfiguration();
 
-                            return configuration.applyPermitDefaultValues();
-                        })
-                )
-                .authorizeHttpRequests(request -> {
+                    Arrays.stream(HttpMethod.values())
+                        .forEach(configuration::addAllowedMethod);
 
-                    request.requestMatchers(
-                            "/api/v1/messages/**",
-                            "/api/v1/invitations/**")
-                            .authenticated();
-
-                    request.anyRequest().permitAll();
-
+                    return configuration.applyPermitDefaultValues();
                 })
-                .httpBasic(Customizer.withDefaults())
-                .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.decoder(jwtDecoder)))
-                .build();
+            )
+
+            .authorizeHttpRequests(request -> {
+
+                request
+                    .requestMatchers(
+                        "/api/v1/messages/**",
+                        "/api/v1/invitations/**"
+                    )
+                    .authenticated();
+
+                request.anyRequest().permitAll();
+
+            })
+
+            .httpBasic(Customizer.withDefaults())
+            .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.decoder(jwtDecoder)))
+            .build();
     }
 
     @Bean
