@@ -5,6 +5,7 @@ import com.group4.chatapp.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.ProviderManager;
@@ -19,9 +20,8 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationProvider;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Configuration
@@ -40,6 +40,17 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
                 .csrf(CsrfConfigurer::disable)
+                .cors(cors ->
+                        cors.configurationSource(req -> {
+
+                            var configuration = new CorsConfiguration();
+
+                            Arrays.stream(HttpMethod.values())
+                                    .forEach(configuration::addAllowedMethod);
+
+                            return configuration.applyPermitDefaultValues();
+                        })
+                )
                 .authorizeHttpRequests(request -> {
 
                     request.requestMatchers(
@@ -79,19 +90,5 @@ public class SecurityConfig {
     @Bean
     public AuthenticationManager authenticationManager(List<AuthenticationProvider> providers) {
         return new ProviderManager(providers);
-    }
-
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        System.out.println("cau hinh cors");
-        CorsConfiguration config = new CorsConfiguration();
-        config.addAllowedOriginPattern("*");
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
-        config.setAllowedHeaders(List.of("*"));
-        config.setAllowCredentials(true);
-
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", config);
-        return source;
     }
 }
