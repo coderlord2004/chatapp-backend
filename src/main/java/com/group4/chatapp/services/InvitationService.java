@@ -164,15 +164,40 @@ public class InvitationService {
                 "Receiver with provided username not found!"
             ));
 
+        var areFriends = chatRoomRepository.areUsersHasRoomOfType(
+            sender.getId(),
+            receiver.getId(),
+            ChatRoom.Type.DUO
+        );
+
+        if (areFriends) {
+            throw new ApiException(
+                HttpStatus.CONFLICT,
+                "You and the receiver are friends."
+            );
+        }
+
         if (!ableToSendInvitation(sender, chatRoomId)) {
             throw new ApiException(
                 HttpStatus.FORBIDDEN,
-                "You aren't in this Room"
+                "You aren't in this Room."
             );
         }
 
         ChatRoom chatRoom = null;
         if (chatRoomId != null) {
+
+            var receiverInChatRoom = chatRoomRepository.userIsMemberInChatRoom(
+                receiver.getId(), chatRoomId
+            );
+
+            if (receiverInChatRoom) {
+                throw new ApiException(
+                    HttpStatus.CONFLICT,
+                    "The receiver are in this room."
+                );
+            }
+
             chatRoom = chatRoomRepository.findById(chatRoomId)
                 .orElseThrow(() -> new ApiException(
                     HttpStatus.NOT_FOUND,
