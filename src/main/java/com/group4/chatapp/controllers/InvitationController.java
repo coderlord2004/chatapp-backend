@@ -3,7 +3,7 @@ package com.group4.chatapp.controllers;
 import com.group4.chatapp.dtos.invitation.InvitationDto;
 import com.group4.chatapp.dtos.invitation.InvitationReplyDto;
 import com.group4.chatapp.dtos.invitation.InvitationSendDto;
-import com.group4.chatapp.services.InvitationService;
+import com.group4.chatapp.services.invitations.InvitationService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import jakarta.validation.Valid;
