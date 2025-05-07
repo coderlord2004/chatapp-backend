@@ -12,6 +12,7 @@ import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
@@ -25,6 +26,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @Configuration
+@EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -49,7 +51,8 @@ public class SecurityConfig {
 
                     Arrays.stream(HttpMethod.values())
                         .forEach(configuration::addAllowedMethod);
-
+                    configuration.setAllowCredentials(true);
+                    configuration.addAllowedOrigin("http://localhost:3000");
                     return configuration.applyPermitDefaultValues();
                 })
             )
@@ -64,7 +67,6 @@ public class SecurityConfig {
                     .authenticated();
 
                 request.anyRequest().permitAll();
-
             })
 
             .httpBasic(Customizer.withDefaults())
