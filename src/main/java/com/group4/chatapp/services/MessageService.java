@@ -36,7 +36,6 @@ public class MessageService {
 
         chatRoom.getMembers()
             .parallelStream()
-            .filter((member) -> !sender.equals(member))
             .forEach((member) ->
                 messagingTemplate.convertAndSendToUser(
                     member.getUsername(),
