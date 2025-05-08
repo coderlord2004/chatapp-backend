@@ -47,32 +47,32 @@ class InvitationSendService {
             );
         }
 
-        var receiver = userRepository.findByUsername(receiverUsername)
+        return userRepository.findByUsername(receiverUsername)
             .orElseThrow(() -> new ApiException(
                 HttpStatus.NOT_FOUND,
                 "Receiver with provided username not found!"
             ));
-
-        var areFriends = chatRoomRepository.usersShareRoomOfType(
-            sender.getId(),
-            receiver.getId(),
-            ChatRoom.Type.DUO
-        );
-
-        if (areFriends) {
-            throw new ApiException(
-                HttpStatus.CONFLICT,
-                "You and the receiver are friends."
-            );
-        }
-
-        return receiver;
     }
 
     @Nullable
     private ChatRoom getChatRoomAndValidate(User sender, User receiver, @Nullable Long chatRoomId) {
 
-        if (chatRoomId == null) {
+        var isInvitationToGroup = chatRoomId != null;
+        if (!isInvitationToGroup) {
+
+            var areFriends = chatRoomRepository.usersShareRoomOfType(
+                sender.getId(),
+                receiver.getId(),
+                ChatRoom.Type.DUO
+            );
+
+            if (areFriends) {
+                throw new ApiException(
+                    HttpStatus.CONFLICT,
+                    "You and the receiver are friends."
+                );
+            }
+
             return null;
         }
 
