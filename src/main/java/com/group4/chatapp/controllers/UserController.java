@@ -41,7 +41,10 @@ public class UserController {
     }
 
     @GetMapping("/search/")
-    public List<UserSearchDto> searchUser(@RequestParam(name = "q") String keyword) {
-        return userService.searchUser(keyword);
+    public List<UserSearchDto> searchUser(
+        @RequestParam(name = "q") String keyword,
+        @RequestParam(name = "limit", defaultValue = "10") int limit
+    ) {
+        return userService.searchUser(keyword, limit);
     }
 }

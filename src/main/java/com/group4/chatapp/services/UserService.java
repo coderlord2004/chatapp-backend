@@ -2,9 +2,12 @@ package com.group4.chatapp.services;
 
 import com.group4.chatapp.dtos.user.UserDto;
 import com.group4.chatapp.dtos.user.UserSearchDto;
+import com.group4.chatapp.exceptions.ApiException;
 import com.group4.chatapp.models.User;
 import com.group4.chatapp.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.lang.Nullable;
 import org.springframework.security.core.Authentication;
@@ -74,8 +77,20 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public List<UserSearchDto> searchUser(String keyword) {
-        return repository.findByUsernameContaining(keyword)
+    public List<UserSearchDto> searchUser(String keyword, int limit) {
+
+        var MAX_LIMIT = 20;
+
+        if (limit <= 0 || limit > MAX_LIMIT) {
+            throw new ApiException(
+                HttpStatus.BAD_REQUEST,
+                String.format("Limit must be between 1 and %d", MAX_LIMIT)
+            );
+        }
+
+        var pageable = PageRequest.ofSize(limit);
+
+        return repository.findByUsernameContaining(keyword, pageable    )
             .map(UserSearchDto::new)
             .toList();
     }
