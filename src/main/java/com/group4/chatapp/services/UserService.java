@@ -1,6 +1,7 @@
 package com.group4.chatapp.services;
 
 import com.group4.chatapp.dtos.user.UserDto;
+import com.group4.chatapp.dtos.user.UserSearchDto;
 import com.group4.chatapp.models.User;
 import com.group4.chatapp.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -11,9 +12,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.ErrorResponseException;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -68,5 +71,12 @@ public class UserService {
     public User getUserOrThrows() {
         return getUserByContext()
             .orElseThrow(() -> new ErrorResponseException(HttpStatus.UNAUTHORIZED));
+    }
+
+    @Transactional(readOnly = true)
+    public List<UserSearchDto> searchUser(String keyword) {
+        return repository.findByUsernameContaining(keyword)
+            .map(UserSearchDto::new)
+            .toList();
     }
 }
