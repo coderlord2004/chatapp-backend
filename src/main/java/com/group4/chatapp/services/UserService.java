@@ -7,7 +7,6 @@ import com.group4.chatapp.models.User;
 import com.group4.chatapp.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.lang.Nullable;
 import org.springframework.security.core.Authentication;
@@ -90,7 +89,7 @@ public class UserService {
 
         var pageable = PageRequest.ofSize(limit);
 
-        return repository.findByUsernameContaining(keyword, pageable    )
+        return repository.findByUsernameContaining(keyword, pageable)
             .map(UserSearchDto::new)
             .toList();
     }
