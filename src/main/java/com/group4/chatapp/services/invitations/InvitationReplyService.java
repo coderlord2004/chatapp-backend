@@ -71,7 +71,9 @@ class InvitationReplyService {
     private void notifyUserReply(Invitation invitation) {
 
         var receiver = new ArrayList<User>();
-        var needSendToMembers = invitation.getChatRoom() != null
+        var isFriendRequest = invitation.getChatRoom() != null;
+
+        var needSendToMembers = isFriendRequest
             && invitation.getStatus() != Invitation.Status.ACCEPTED;
 
         if (needSendToMembers) {
@@ -114,9 +116,7 @@ class InvitationReplyService {
         createChatGroup(members);
     }
 
-    public void replyInvitation(long invitationId, boolean isAccepted) {
-
-        var user = userService.getUserOrThrows();
+    private Invitation getInvitationAndCheck(User user, long invitationId) {
 
         var invitation = repository.findById(invitationId)
             .orElseThrow(() -> new ApiException(
@@ -138,6 +138,14 @@ class InvitationReplyService {
                 "Invitation has been replied."
             );
         }
+
+        return invitation;
+    }
+
+    public void replyInvitation(long invitationId, boolean isAccepted) {
+
+        var user = userService.getUserOrThrows();
+        var invitation = getInvitationAndCheck(user, invitationId);
 
         if (isAccepted) {
             onInvitationAccepted(invitation);

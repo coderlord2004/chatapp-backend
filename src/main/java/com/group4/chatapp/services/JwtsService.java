@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -38,8 +39,9 @@ public class JwtsService {
 
         var claimsSet = JwtClaimsSet.builder()
             .subject(authentication.getName())
-            .issuedAt(issued)
+            .id(UUID.randomUUID().toString())
             .expiresAt(expiration)
+            .issuedAt(issued)
             .build();
 
         var parameter = JwtEncoderParameters.from(claimsSet);

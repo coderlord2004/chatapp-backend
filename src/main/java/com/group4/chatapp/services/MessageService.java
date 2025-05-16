@@ -29,7 +29,6 @@ public class MessageService {
 
     private void sendToMembers(ChatRoom chatRoom, ChatMessage savedMessage) {
 
-        var sender = savedMessage.getSender();
         var socketPath = chatRoom.getSocketPath();
 
         var messageReceiveDto = new MessageReceiveDto(savedMessage);
