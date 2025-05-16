@@ -31,7 +31,7 @@ public class Invitation {
     private Status status;
 
     public boolean isFriendRequest() {
-        return chatRoom != null;
+        return chatRoom == null;
     }
 
     public boolean isPending() {
