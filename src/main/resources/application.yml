@@ -20,6 +20,13 @@ spring:
     ansi:
       enabled: ALWAYS
 
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 100MB
+      max-request-size: 150MB
+      file-size-threshold: 2KB
+
 server:
   port: "${PORT:8080}"
 
@@ -31,3 +38,8 @@ jwts:
   refresh-token-lifetime: P30D # 30 days
 
   secret-key: "${JWT_SECRET}"
+
+cloudinary:
+  cloud-name: ${webchat_cloud_name}
+  api-key: ${webchat_api_key}
+  api-secret: ${webchat_api_secret}

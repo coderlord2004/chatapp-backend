@@ -97,7 +97,7 @@ public class MessageService {
                     "Page isn't less than 1!"
             );
 
-        receiveChatRoomAndCheck(roomId); // logic kiểm tra quyền phòng
+        receiveChatRoomAndCheck(roomId);
 
         PageRequest pageRequest = PageRequest.of(page - 1, 50, Sort.by(Sort.Direction.DESC, "sentOn"));
 
