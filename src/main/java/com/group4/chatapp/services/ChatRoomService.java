@@ -20,7 +20,7 @@ public class ChatRoomService {
 
         var user = userService.getUserOrThrows();
 
-        return repository.findByMembersId(user.getId())
+        return repository.findWithLatestMessage(user.getId())
             .stream()
             .map(ChatRoomDto::new)
             .toList();

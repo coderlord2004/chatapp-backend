@@ -6,6 +6,7 @@ import com.group4.chatapp.models.ChatRoom;
 import com.group4.chatapp.models.User;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.springframework.lang.Nullable;
 
 import java.sql.Timestamp;
@@ -13,6 +14,7 @@ import java.util.List;
 
 @Getter
 @AllArgsConstructor
+@NoArgsConstructor
 public class ChatRoomDto {
 
     private long id;

@@ -23,8 +23,8 @@ public class MessageController {
     private final MessageService messageService;
 
     @GetMapping("/{roomId}")
-    public List<MessageReceiveDto> getMessages(@PathVariable long roomId) {
-        return messageService.getMessages(roomId);
+    public List<MessageReceiveDto> getMessages(@PathVariable long roomId, @RequestParam(name = "page", defaultValue = "1") int page) {
+        return messageService.getMessages(roomId, page);
     }
 
     @PostMapping("/{roomId}")
