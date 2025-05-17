@@ -6,6 +6,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.lang.Nullable;
 
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -29,6 +30,9 @@ public class ChatRoom {
 
     @ManyToMany
     private Set<User> members;
+
+    @OneToMany(mappedBy = "message")
+    private List<ChatMessage> messages;
 
     @Column(nullable = false)
     @Enumerated(EnumType.ORDINAL)

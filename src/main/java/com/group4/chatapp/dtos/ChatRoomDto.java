@@ -1,5 +1,7 @@
 package com.group4.chatapp.dtos;
 
+import com.group4.chatapp.dtos.messages.MessageReceiveDto;
+import com.group4.chatapp.models.ChatMessage;
 import com.group4.chatapp.models.ChatRoom;
 import com.group4.chatapp.models.User;
 import lombok.AllArgsConstructor;
@@ -24,7 +26,9 @@ public class ChatRoomDto {
     private ChatRoom.Type type;
     private Timestamp createdOn;
 
-    public ChatRoomDto(ChatRoom room) {
+    private MessageReceiveDto latestMessage;
+
+    public ChatRoomDto(ChatRoom room, ChatMessage latestMessage) {
 
         this(
             room.getId(),
@@ -32,7 +36,8 @@ public class ChatRoomDto {
             null,
             room.getMembers().stream().map(User::getUsername).toList(),
             room.getType(),
-            room.getCreatedOn()
+            room.getCreatedOn(),
+            new MessageReceiveDto(latestMessage)
         );
 
         var avatar = room.getAvatar();
