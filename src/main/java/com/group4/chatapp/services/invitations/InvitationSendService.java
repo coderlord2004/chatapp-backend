@@ -68,6 +68,19 @@ class InvitationSendService {
                 "You and the receiver are already friends."
             );
         }
+
+        var isReceiverSent = repository.existsFriendRequestWith(
+            receiver.getId(),
+            sender.getId(),
+            Invitation.Status.PENDING
+        );
+
+        if (isReceiverSent) {
+            throw new ApiException(
+                HttpStatus.CONFLICT,
+                "Please accept your receiver's invitation instead."
+            );
+        }
     }
 
     private void validateGroupRequest(User sender, User receiver, ChatRoom chatRoom) {
@@ -121,7 +134,7 @@ class InvitationSendService {
         if (hasTheSamePendingInvitationBefore(sender, receiver, chatRoom)) {
             throw new ApiException(
                 HttpStatus.CONFLICT,
-                "You sent the same invitation before"
+                "You sent the same invitation before."
             );
         }
 
