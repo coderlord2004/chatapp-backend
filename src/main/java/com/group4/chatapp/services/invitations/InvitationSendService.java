@@ -54,30 +54,26 @@ class InvitationSendService {
             ));
     }
 
-    @Nullable
-    private ChatRoom getChatRoomAndValidate(User sender, User receiver, @Nullable Long chatRoomId) {
+    private void validateFriendRequest(User sender, User receiver) {
 
-        var isInvitationToGroup = chatRoomId != null;
-        if (!isInvitationToGroup) {
+        var areFriends = chatRoomRepository.usersShareRoomOfType(
+            sender.getId(),
+            receiver.getId(),
+            ChatRoom.Type.DUO
+        );
 
-            var areFriends = chatRoomRepository.usersShareRoomOfType(
-                sender.getId(),
-                receiver.getId(),
-                ChatRoom.Type.DUO
+        if (areFriends) {
+            throw new ApiException(
+                HttpStatus.CONFLICT,
+                "You and the receiver are already friends."
             );
-
-            if (areFriends) {
-                throw new ApiException(
-                    HttpStatus.CONFLICT,
-                    "You and the receiver are friends."
-                );
-            }
-
-            return null;
         }
+    }
+
+    private void validateGroupRequest(User sender, User receiver, ChatRoom chatRoom) {
 
         var senderIsInTheRoom = chatRoomRepository.userIsMemberInChatRoom(
-            sender.getId(), chatRoomId
+            sender.getId(), chatRoom.getId()
         );
 
         if (!senderIsInTheRoom) {
@@ -88,7 +84,7 @@ class InvitationSendService {
         }
 
         var receiverInChatRoom = chatRoomRepository.userIsMemberInChatRoom(
-            receiver.getId(), chatRoomId
+            receiver.getId(), chatRoom.getId()
         );
 
         if (receiverInChatRoom) {
@@ -97,12 +93,44 @@ class InvitationSendService {
                 "The receiver is already in this room."
             );
         }
+    }
 
-        return chatRoomRepository.findById(chatRoomId)
-            .orElseThrow(() -> new ApiException(
-                HttpStatus.NOT_FOUND,
-                "Chatroom with provided id not found."
-            ));
+    private boolean hasTheSamePendingInvitationBefore(
+        User sender, User receiver, @Nullable ChatRoom chatRoom
+    ) {
+        if (chatRoom == null) {
+            return repository.existsFriendRequestWith(
+                sender.getId(),
+                receiver.getId(),
+                Invitation.Status.PENDING
+            );
+        } else {
+            return repository.existGroupInvitationWith(
+                sender.getId(),
+                receiver.getId(),
+                chatRoom.getId(),
+                Invitation.Status.PENDING
+            );
+        }
+    }
+
+    private void validateChatRoomAndUsers(
+        User sender, User receiver, @Nullable ChatRoom chatRoom
+    ) {
+
+        if (hasTheSamePendingInvitationBefore(sender, receiver, chatRoom)) {
+            throw new ApiException(
+                HttpStatus.CONFLICT,
+                "You sent the same invitation before"
+            );
+        }
+
+        var isInvitationToGroup = chatRoom != null;
+        if (isInvitationToGroup) {
+            validateGroupRequest(sender, receiver, chatRoom);
+        } else {
+            validateFriendRequest(sender, receiver);
+        }
     }
 
     public void sendInvitation(InvitationSendDto dto) {
@@ -113,7 +141,17 @@ class InvitationSendService {
         var sender = userService.getUserOrThrows();
 
         var receiver = getReceiverAndValidate(sender, receiverUsername);
-        var chatRoom = getChatRoomAndValidate(sender, receiver, chatRoomId);
+
+        ChatRoom chatRoom = null;
+        if (chatRoomId != null) {
+            chatRoom = chatRoomRepository.findById(chatRoomId)
+                .orElseThrow(() -> new ApiException(
+                    HttpStatus.NOT_FOUND,
+                    "Chatroom with provided id not found."
+                ));
+        }
+
+        validateChatRoomAndUsers(sender, receiver, chatRoom);
 
         var invitation = Invitation.builder()
             .status(Invitation.Status.PENDING)
