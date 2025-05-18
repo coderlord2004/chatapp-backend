@@ -51,8 +51,10 @@ public class SecurityConfig {
 
                     Arrays.stream(HttpMethod.values())
                         .forEach(configuration::addAllowedMethod);
+
                     configuration.setAllowCredentials(true);
-                    configuration.addAllowedOrigin("http://localhost:3000");
+                    configuration.addAllowedOriginPattern("*");
+
                     return configuration.applyPermitDefaultValues();
                 })
             )
