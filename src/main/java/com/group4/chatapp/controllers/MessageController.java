@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,8 +24,8 @@ public class MessageController {
     private final MessageService messageService;
 
     @GetMapping("/{roomId}")
-    public List<MessageReceiveDto> getMessages(@PathVariable long roomId) {
-        return messageService.getMessages(roomId);
+    public List<MessageReceiveDto> getMessages(@PathVariable long roomId, @RequestParam(name = "page", defaultValue = "1") int page) {
+        return messageService.getMessages(roomId, page);
     }
 
     @PostMapping("/{roomId}")

@@ -10,12 +10,17 @@ import com.group4.chatapp.repositories.ChatRoomRepository;
 import com.group4.chatapp.repositories.MessageRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -85,12 +90,23 @@ public class MessageService {
     }
 
     @Transactional
-    public List<MessageReceiveDto> getMessages(long roomId) {
+    public List<MessageReceiveDto> getMessages(long roomId, int page) {
+        if (page < 1)
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Page isn't less than 1!"
+            );
 
         receiveChatRoomAndCheck(roomId);
 
-        return messageRepository.findByRoomId(roomId)
-            .map(MessageReceiveDto::new)
-            .toList();
+        PageRequest pageRequest = PageRequest.of(page - 1, 50, Sort.by(Sort.Direction.DESC, "sentOn"));
+
+        Stream<ChatMessage> stream = messageRepository.findByRoomId(roomId, pageRequest);
+        return stream
+                .map(MessageReceiveDto::new)
+                .collect(Collectors.collectingAndThen(Collectors.toList(), list -> {
+                    Collections.reverse(list);
+                    return list;
+                }));
     }
 }
