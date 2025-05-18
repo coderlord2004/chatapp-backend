@@ -8,7 +8,9 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -28,11 +30,11 @@ public class MessageController {
         return messageService.getMessages(roomId, page);
     }
 
-    @PostMapping("/{roomId}")
+    @PostMapping(value = "/{roomId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public void sendMessage(
         @PathVariable long roomId,
-        @Valid @RequestBody MessageSendDto dto
-    ) {
+        @Valid @ModelAttribute MessageSendDto dto
+    ) throws InterruptedException {
         messageService.sendMessage(roomId, dto);
     }
 }

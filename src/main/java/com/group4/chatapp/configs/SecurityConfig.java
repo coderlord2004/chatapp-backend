@@ -23,6 +23,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 @Configuration
@@ -52,7 +53,7 @@ public class SecurityConfig {
                     Arrays.stream(HttpMethod.values())
                         .forEach(configuration::addAllowedMethod);
                     configuration.setAllowCredentials(true);
-                    configuration.addAllowedOrigin("http://localhost:3000");
+                    configuration.addAllowedOriginPattern("*");
                     return configuration.applyPermitDefaultValues();
                 })
             )

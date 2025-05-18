@@ -32,5 +32,5 @@ public class ChatMessage {
     private Timestamp sentOn;
 
     @OneToMany
-    private List<File> attachments;
+    private List<Attachment> attachments;
 }

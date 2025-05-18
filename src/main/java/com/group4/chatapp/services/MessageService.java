@@ -3,9 +3,11 @@ package com.group4.chatapp.services;
 import com.group4.chatapp.dtos.messages.MessageReceiveDto;
 import com.group4.chatapp.dtos.messages.MessageSendDto;
 import com.group4.chatapp.exceptions.ApiException;
+import com.group4.chatapp.models.Attachment;
 import com.group4.chatapp.models.ChatMessage;
 import com.group4.chatapp.models.ChatRoom;
 import com.group4.chatapp.models.User;
+import com.group4.chatapp.repositories.AttachmentRepository;
 import com.group4.chatapp.repositories.ChatRoomRepository;
 import com.group4.chatapp.repositories.MessageRepository;
 import jakarta.transaction.Transactional;
@@ -15,10 +17,13 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -31,6 +36,11 @@ public class MessageService {
 
     private final UserService userService;
     private final SimpMessagingTemplate messagingTemplate;
+
+    private final CloudinaryService cloudinaryService;
+
+    private final AttachmentService attachmentService;
+    private final AttachmentRepository attachmentRepository;
 
     private void sendToMembers(ChatRoom chatRoom, ChatMessage savedMessage) {
 
@@ -49,8 +59,31 @@ public class MessageService {
             );
     }
 
-    private ChatMessage saveMessage(User user, ChatRoom chatRoom, MessageSendDto dto) {
-        var newMessage = dto.toMessage(chatRoom, user);
+    private ChatMessage saveMessage(User user, ChatRoom chatRoom, MessageSendDto dto) throws InterruptedException {
+        List<Map> uploadedFiles = cloudinaryService.uploadMutiFile(dto.getAttachments());
+
+        ChatMessage newMessage;
+
+        if (uploadedFiles != null) {
+            List<Attachment> attachments = uploadedFiles.stream().map((file) -> {
+                if (file.get("status").equals("success")) {
+                    String resourceType = (String) file.get("resource_type");
+                    String format = (String) file.get("format");
+
+                    Attachment attachment = Attachment.builder()
+                            .source((String) file.get("secure_url"))
+                            .type(attachmentService.checkTypeInFileType(resourceType, format))
+                            .build();
+                    return attachmentRepository.save(attachment);
+                }
+                return null;
+            }).toList();
+
+            newMessage = dto.toMessage(chatRoom, user, attachments);
+        } else {
+            newMessage = dto.toMessage(chatRoom, user, new ArrayList<>());
+        }
+
         return messageRepository.save(newMessage);
     }
 
@@ -80,7 +113,13 @@ public class MessageService {
     }
 
     @Transactional
-    public void sendMessage(long roomId, MessageSendDto dto) {
+    public void sendMessage(long roomId, MessageSendDto dto) throws InterruptedException {
+        if (dto.getMessage().isEmpty() && dto.getAttachments() == null) {
+            throw new ApiException(
+                    HttpStatus.BAD_REQUEST,
+                    "Message and files are not empty!"
+            );
+        }
 
         var user = userService.getUserOrThrows();
         var chatRoom = receiveChatRoomAndCheck(roomId, user);

@@ -30,7 +30,7 @@ public class User implements UserDetails {
 
     @Nullable
     @ManyToOne
-    private File avatar;
+    private Attachment avatar;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

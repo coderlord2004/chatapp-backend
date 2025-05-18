@@ -1,13 +1,13 @@
 package com.group4.chatapp.dtos;
 
-import com.group4.chatapp.models.File;
+import com.group4.chatapp.models.Attachment;
 
 public record FileDto(
     String source,
-    File.FileType type
+    Attachment.FileType type
 ) {
 
-    public FileDto(File file) {
-        this(file.getSource(), file.getType());
+    public FileDto(Attachment attachment) {
+        this(attachment.getSource(), attachment.getType());
     }
 }
