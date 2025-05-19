@@ -26,7 +26,7 @@ public class ChatRoom {
 
     @Nullable
     @ManyToOne
-    private File avatar;
+    private Attachment avatar;
 
     @ManyToMany
     private Set<User> members;
