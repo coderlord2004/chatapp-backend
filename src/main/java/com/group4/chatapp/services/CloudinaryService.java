@@ -15,6 +15,7 @@ import java.util.concurrent.*;
 @Service
 @RequiredArgsConstructor
 public class CloudinaryService {
+
     private final Cloudinary cloudinary;
     private final AttachmentService attachmentService;
     // upload avatar
@@ -23,11 +24,15 @@ public class CloudinaryService {
             Map<String, Object> options = Map.of(
                     "folder", "Image/"
             );
-            return (String) cloudinary.uploader().upload(file.getBytes(), options).get("secure_url");
+
+            return (String) cloudinary.uploader()
+                .upload(file.getBytes(), options)
+                .get("secure_url");
+
         } catch (Exception e) {
             throw new ApiException(
-                    HttpStatus.BAD_REQUEST,
-                    e.getMessage()
+                HttpStatus.BAD_REQUEST,
+                e.getMessage()
             );
         }
     }
