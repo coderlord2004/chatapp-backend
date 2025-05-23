@@ -1,4 +1,4 @@
-FROM gradle:8.13.0-jdk21-ubi AS builder
+FROM gradle:8.13.0-jdk21-alpine AS builder
 
 COPY build.gradle.kts .
 RUN gradle dependencies --no-daemon
@@ -13,7 +13,7 @@ RUN mkdir -p ./src/main/resources/certs/jwts/ && \
 
 RUN gradle bootJar --no-daemon
 
-FROM eclipse-temurin:21-jre-ubi9-minimal
+FROM eclipse-temurin:21-jre-alpine
 
 COPY --from=builder /home/gradle/build/libs/ .
 
