@@ -1,7 +1,7 @@
 package com.group4.chatapp.services;
 
 import com.group4.chatapp.dtos.user.UserDto;
-import com.group4.chatapp.dtos.user.UserSearchDto;
+import com.group4.chatapp.dtos.user.UserWithAvatarDto;
 import com.group4.chatapp.exceptions.ApiException;
 import com.group4.chatapp.models.User;
 import com.group4.chatapp.repositories.UserRepository;
@@ -76,7 +76,7 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public List<UserSearchDto> searchUser(String keyword, int limit) {
+    public List<UserWithAvatarDto> searchUser(String keyword, int limit) {
 
         var MAX_LIMIT = 20;
 
@@ -90,7 +90,7 @@ public class UserService {
         var pageable = PageRequest.ofSize(limit);
 
         return repository.findByUsernameContaining(keyword, pageable)
-            .map(UserSearchDto::new)
+            .map(UserWithAvatarDto::new)
             .toList();
     }
 }

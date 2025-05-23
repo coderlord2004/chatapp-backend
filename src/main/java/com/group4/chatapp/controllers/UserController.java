@@ -4,7 +4,7 @@ import com.group4.chatapp.dtos.token.TokenObtainPairDto;
 import com.group4.chatapp.dtos.token.TokenRefreshDto;
 import com.group4.chatapp.dtos.token.TokenRefreshRequestDto;
 import com.group4.chatapp.dtos.user.UserDto;
-import com.group4.chatapp.dtos.user.UserSearchDto;
+import com.group4.chatapp.dtos.user.UserWithAvatarDto;
 import com.group4.chatapp.services.JwtsService;
 import com.group4.chatapp.services.UserService;
 import jakarta.validation.Valid;
@@ -41,7 +41,7 @@ public class UserController {
     }
 
     @GetMapping("/search/")
-    public List<UserSearchDto> searchUser(
+    public List<UserWithAvatarDto> searchUser(
         @RequestParam(name = "q") String keyword,
         @RequestParam(name = "limit", defaultValue = "10") int limit
     ) {

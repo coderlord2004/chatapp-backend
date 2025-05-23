@@ -22,7 +22,7 @@ public class ChatRoomDto {
     @Nullable
     private String name;
 
-    private FileDto avatar;
+    private AttachmentDto avatar;
     private List<String> membersUsername;
 
     private ChatRoom.Type type;
@@ -44,7 +44,7 @@ public class ChatRoomDto {
 
         var avatar = room.getAvatar();
         if (avatar != null) {
-            this.avatar = new FileDto(avatar);
+            this.avatar = new AttachmentDto(avatar);
         }
     }
 }
