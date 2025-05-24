@@ -1,7 +1,7 @@
 FROM gradle:8.13.0-jdk21-alpine AS builder
 
-COPY /etc/secrets/public.pem ./src/main/resources/certs/jwts/
-COPY /etc/secrets/private.pem ./src/main/resources/certs/jwts/
+RUN cp /etc/secrets/public.pem ./src/main/resources/certs/jwts/ && \
+    cp /etc/secrets/private.pem ./src/main/resources/certs/jwts/
 
 COPY build.gradle.kts .
 RUN gradle dependencies --no-daemon
