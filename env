@@ -1,0 +1,6 @@
+CLOUDINARY_API_KEY=447481735449169
+CLOUDINARY_API_SECRET=uTyiEwLZ_u_wYsgR_jRLKYBDqzk
+CLOUDINARY_CLOUD_NAME=dzluvug0o
+DB_PASSWORD=BKDeYf7FFCRv795FZrnL57cKMqHyaX9H
+DB_URL=jdbc:postgresql://dpg-d0omv6je5dus73d1f1s0-a.singapore-postgres.render.com/chatapp_gd3c 
+DB_USERNAME=minhnbnt
