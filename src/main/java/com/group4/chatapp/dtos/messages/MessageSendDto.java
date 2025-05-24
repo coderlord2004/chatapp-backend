@@ -28,7 +28,7 @@ public class MessageSendDto {
                 .room(room)
                 .sender(sender)
                 .message(this.message)
-                .attachments(attachments) // TODO: handle message with attachments
+                .attachments(attachments)
                 .build();
     }
 }

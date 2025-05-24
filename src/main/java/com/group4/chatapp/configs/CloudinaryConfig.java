@@ -10,19 +10,24 @@ import java.util.Map;
 @Configuration
 public class CloudinaryConfig {
 
-    @Value("${cloudinary.cloud-name}")
-    private String cloudName;
-
     @Value("${cloudinary.api-key}")
     private String apiKey;
 
     @Value("${cloudinary.api-secret}")
     private String apiSecret;
 
+    @Value("${cloudinary.cloud-name}")
+    private String cloudName;
+
     @Bean
-    public Cloudinary getCloudinary(){
-        Map<String, String> config = Map.of("cloud_name", cloudName, "api_key", apiKey, "api_secret", apiSecret);
+    public Cloudinary cloudinaryClient() {
+
+        var config = Map.of(
+            "api_key", apiKey,
+            "api_secret", apiSecret,
+            "cloud_name", cloudName
+        );
+
         return new Cloudinary(config);
     }
-
 }

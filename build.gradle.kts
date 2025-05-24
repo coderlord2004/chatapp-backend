@@ -23,6 +23,8 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-websocket")
     implementation("com.cloudinary:cloudinary-http5:2.2.0")
 
+    implementation("com.cloudinary:cloudinary-http5:2.2.0")
+
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.6")
 
     developmentOnly("org.springframework.boot:spring-boot-devtools")

@@ -17,15 +17,12 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -59,30 +56,44 @@ public class MessageService {
             );
     }
 
-    private ChatMessage saveMessage(User user, ChatRoom chatRoom, MessageSendDto dto) throws InterruptedException {
-        List<Map> uploadedFiles = cloudinaryService.uploadMutiFile(dto.getAttachments());
+    private List<Attachment> getAttachments(MessageSendDto dto) {
 
-        ChatMessage newMessage;
-
-        if (uploadedFiles != null) {
-            List<Attachment> attachments = uploadedFiles.stream().map((file) -> {
-                if (file.get("status").equals("success")) {
-                    String resourceType = (String) file.get("resource_type");
-                    String format = (String) file.get("format");
-
-                    Attachment attachment = Attachment.builder()
-                            .source((String) file.get("secure_url"))
-                            .type(attachmentService.checkTypeInFileType(resourceType, format))
-                            .build();
-                    return attachmentRepository.save(attachment);
-                }
-                return null;
-            }).toList();
-
-            newMessage = dto.toMessage(chatRoom, user, attachments);
-        } else {
-            newMessage = dto.toMessage(chatRoom, user, new ArrayList<>());
+        List<Map<String, ?>> uploadedFiles;
+        try {
+            uploadedFiles = cloudinaryService.uploadMutiFile(dto.getAttachments());
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
+
+        if (uploadedFiles == null) {
+            return List.of();
+        }
+
+        return uploadedFiles
+            .stream()
+            .map((file) -> {
+
+                if (!file.get("status").equals("success")) {
+                    return null;
+                }
+
+                var resourceType = (String) file.get("resource_type");
+                var format = (String) file.get("format");
+
+                var attachment = Attachment.builder()
+                    .source((String) file.get("secure_url"))
+                    .type(attachmentService.checkTypeInFileType(resourceType, format))
+                    .build();
+
+                return attachmentRepository.save(attachment);
+            })
+            .toList();
+    }
+
+    private ChatMessage saveMessage(User user, ChatRoom chatRoom, MessageSendDto dto) {
+
+        var attachments = getAttachments(dto);
+        var newMessage = dto.toMessage(chatRoom, user, attachments);
 
         return messageRepository.save(newMessage);
     }
@@ -113,12 +124,12 @@ public class MessageService {
     }
 
     @Transactional
-    public void sendMessage(long roomId, MessageSendDto dto) throws InterruptedException {
+    public void sendMessage(long roomId, MessageSendDto dto) {
 
         if (dto.getMessage().isEmpty() && dto.getAttachments() == null) {
             throw new ApiException(
-                    HttpStatus.BAD_REQUEST,
-                    "Message and files are not empty!"
+                HttpStatus.BAD_REQUEST,
+                "Message and files are not empty!"
             );
         }
 
@@ -131,22 +142,28 @@ public class MessageService {
 
     @Transactional
     public List<MessageReceiveDto> getMessages(long roomId, int page) {
-        if (page < 1)
+
+        if (page < 1) {
             throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "Page isn't less than 1!"
+                HttpStatus.BAD_REQUEST,
+                "Page isn't less than 1!"
             );
+        }
 
         receiveChatRoomAndCheck(roomId);
 
-        PageRequest pageRequest = PageRequest.of(page - 1, 50, Sort.by(Sort.Direction.DESC, "sentOn"));
+        PageRequest pageRequest = PageRequest.of(
+            page - 1,
+            50,
+            Sort.by(Sort.Direction.DESC, "sentOn")
+        );
 
-        Stream<ChatMessage> stream = messageRepository.findByRoomId(roomId, pageRequest);
-        return stream
-                .map(MessageReceiveDto::new)
-                .collect(Collectors.collectingAndThen(Collectors.toList(), list -> {
-                    Collections.reverse(list);
-                    return list;
-                }));
+        var messages = messageRepository.findByRoomId(roomId, pageRequest)
+            .map(MessageReceiveDto::new)
+            .collect(Collectors.toList());
+
+        Collections.reverse(messages);
+
+        return messages;
     }
 }

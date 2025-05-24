@@ -52,8 +52,10 @@ public class SecurityConfig {
 
                     Arrays.stream(HttpMethod.values())
                         .forEach(configuration::addAllowedMethod);
+
                     configuration.setAllowCredentials(true);
                     configuration.addAllowedOriginPattern("*");
+
                     return configuration.applyPermitDefaultValues();
                 })
             )

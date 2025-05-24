@@ -1,6 +1,6 @@
 package com.group4.chatapp.dtos.messages;
 
-import com.group4.chatapp.dtos.FileDto;
+import com.group4.chatapp.dtos.AttachmentDto;
 import com.group4.chatapp.models.ChatMessage;
 
 import java.sql.Timestamp;
@@ -10,7 +10,7 @@ public record MessageReceiveDto(
     String sender,
     String message,
     Timestamp sentOn,
-    List<FileDto> attachments
+    List<AttachmentDto> attachments
 ) {
 
     public MessageReceiveDto(ChatMessage message) {
@@ -21,7 +21,7 @@ public record MessageReceiveDto(
             message.getSentOn(),
             message.getAttachments()
                 .stream()
-                .map(FileDto::new)
+                .map(AttachmentDto::new)
                 .toList()
         );
     }
