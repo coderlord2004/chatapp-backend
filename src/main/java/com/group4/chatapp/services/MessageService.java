@@ -2,6 +2,7 @@ package com.group4.chatapp.services;
 
 import com.group4.chatapp.dtos.messages.MessageReceiveDto;
 import com.group4.chatapp.dtos.messages.MessageSendDto;
+import com.group4.chatapp.dtos.messages.MessageSendResponseDto;
 import com.group4.chatapp.exceptions.ApiException;
 import com.group4.chatapp.models.Attachment;
 import com.group4.chatapp.models.ChatMessage;
@@ -124,7 +125,7 @@ public class MessageService {
     }
 
     @Transactional
-    public void sendMessage(long roomId, MessageSendDto dto) {
+    public MessageSendResponseDto sendMessage(long roomId, MessageSendDto dto) {
 
         if (dto.getMessage().isEmpty() && dto.getAttachments() == null) {
             throw new ApiException(
@@ -138,6 +139,8 @@ public class MessageService {
 
         var savedMessage = saveMessage(user, chatRoom, dto);
         sendToMembers(chatRoom, savedMessage);
+
+        return new MessageSendResponseDto(savedMessage.getId());
     }
 
     @Transactional
