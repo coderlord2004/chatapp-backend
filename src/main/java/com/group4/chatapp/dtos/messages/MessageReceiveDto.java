@@ -7,6 +7,7 @@ import java.sql.Timestamp;
 import java.util.List;
 
 public record MessageReceiveDto(
+    long id,
     String sender,
     String message,
     Timestamp sentOn,
@@ -16,6 +17,7 @@ public record MessageReceiveDto(
     public MessageReceiveDto(ChatMessage message) {
 
         this(
+            message.getId(),
             message.getSender().getUsername(),
             message.getMessage(),
             message.getSentOn(),

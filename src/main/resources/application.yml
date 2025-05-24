@@ -7,8 +7,9 @@ spring:
     name: "chatapp"
 
   datasource:
-    url: "jdbc:sqlite:db.sqlite3"
-    driver-class-name: "org.sqlite.JDBC"
+    url: "${DB_URL}"
+    username: "${DB_USERNAME}"
+    password: "${DB_PASSWORD}"
 
   jpa:
     hibernate:
@@ -16,16 +17,20 @@ spring:
 
     open-in-view: false
 
+    properties:
+      hibernate:
+        dialect: "org.hibernate.dialect.PostgreSQLDialect"
+
   output:
     ansi:
-      enabled: ALWAYS
+      enabled: "ALWAYS"
 
   servlet:
     multipart:
       enabled: true
-      max-file-size: 100MB
-      max-request-size: 150MB
-      file-size-threshold: 2KB
+      max-file-size: "100MB"
+      max-request-size: "150MB"
+      file-size-threshold: "2KB"
 
 server:
   port: "${PORT:8080}"
@@ -34,12 +39,12 @@ jwts:
   public-key: "classpath:certs/jwts/public.pem"
   private-key: "classpath:certs/jwts/private.pem"
 
-  access-token-lifetime: PT30M # 30 minutes
-  refresh-token-lifetime: P30D # 30 days
+  access-token-lifetime: "PT30M" # 30 minutes
+  refresh-token-lifetime: "P30D" # 30 days
 
   secret-key: "${JWT_SECRET}"
 
 cloudinary:
-  cloud-name: ${webchat_cloud_name}
-  api-key: ${webchat_api_key}
-  api-secret: ${webchat_api_secret}
+  api-key: "${CLOUDINARY_API_KEY}"
+  api-secret: "${CLOUDINARY_API_SECRET}"
+  cloud-name: "${CLOUDINARY_CLOUD_NAME}"

@@ -32,8 +32,7 @@ dependencies {
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")
 
-    runtimeOnly("org.xerial:sqlite-jdbc")
-    runtimeOnly("org.hibernate.orm:hibernate-community-dialects")
+    runtimeOnly("org.postgresql:postgresql")
 
     implementation("org.bouncycastle:bcprov-jdk18on:1.79")
     implementation("org.msgpack:jackson-dataformat-msgpack:0.9.9")
