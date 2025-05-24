@@ -2,6 +2,8 @@
 
 FROM gradle:8.13.0-jdk21-alpine AS builder
 
+RUN --mount=type=secret,id=public,dst=/etc/secrets/public.pem cat /etc/secrets/public.pem
+
 WORKDIR /app
 
 COPY build.gradle.kts .
