@@ -114,6 +114,7 @@ public class MessageService {
 
     @Transactional
     public void sendMessage(long roomId, MessageSendDto dto) throws InterruptedException {
+
         if (dto.getMessage().isEmpty() && dto.getAttachments() == null) {
             throw new ApiException(
                     HttpStatus.BAD_REQUEST,

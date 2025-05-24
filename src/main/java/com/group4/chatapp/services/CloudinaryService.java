@@ -33,10 +33,9 @@ public class CloudinaryService {
     }
 
     public List<Map> uploadMutiFile(List<MultipartFile> files) throws InterruptedException {
-        if (files == null)
+        if (files == null || files.isEmpty()) {
             return null;
-        if(files.isEmpty())
-            return null;
+        }
 
         ExecutorService executor = Executors.newFixedThreadPool(files.size());
         List<Future<Map>> futures = new ArrayList<>();
