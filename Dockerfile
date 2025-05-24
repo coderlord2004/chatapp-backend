@@ -1,8 +1,10 @@
 # syntax = docker/dockerfile:1.2
 
-FROM gradle:8.13.0-jdk21-alpine AS builder
+FROM alpine:latest
 
 RUN --mount=type=secret,id=public,dst=/etc/secrets/public.pem cat /etc/secrets/public.pem
+
+FROM gradle:8.13.0-jdk21-alpine AS builder
 
 WORKDIR /app
 
