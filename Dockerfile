@@ -7,8 +7,7 @@ RUN gradle dependencies --no-daemon
 
 COPY . .
 
-RUN --mount=type=bind,source=/etc/secrets/, \
-      target=/app/src/main/resources/certs/jwts \
+RUN --mount=type=bind,source=/etc/secrets/,target=/app/src/main/resources/certs/jwts \
     gradle bootJar --no-daemon
 
 FROM eclipse-temurin:21-jre-alpine
