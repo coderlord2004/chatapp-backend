@@ -10,10 +10,10 @@ COPY . .
 RUN mkdir -p src/main/resources/certs/jwts
 
 RUN --mount=type=bind,id=private,dst=/etc/secrets/private.pem \
-    cp /etc/secrets/private.pem src/main/resources/certs/jwts \
-
-RUN --mount=type=bind,id=public,dst=/etc/secrets/public.pem \
-    cp /etc/secrets/public.pem src/main/resources/certs/jwts
+    --mount=type=bind,id=public,dst=/etc/secrets/public.pem \
+    cp /etc/secrets/private.pem \
+       /etc/secrets/public.pem \
+       src/main/resources/certs/jwts
 
 RUN gradle bootJar --no-daemon
 
