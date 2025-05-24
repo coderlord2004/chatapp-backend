@@ -21,7 +21,7 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
                 select msg2.id
                 from ChatMessage msg2
                 where msg2.room.id = r.id
-                order by msg.sentOn desc, msg.id asc
+                order by msg2.sentOn desc, msg2.id asc
                 limit 1
             )
         )
