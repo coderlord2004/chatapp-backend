@@ -1,3 +1,5 @@
+# syntax = docker/dockerfile:1.2
+
 FROM gradle:8.13.0-jdk21-alpine AS builder
 
 WORKDIR /app
