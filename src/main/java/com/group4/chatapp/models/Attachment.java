@@ -2,10 +2,8 @@ package com.group4.chatapp.models;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
 
-import java.util.List;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -14,6 +12,14 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Attachment {
+
+    private static Set<String> DOCUMENT_FORMATS = Set.of(
+        "pdf", "doc", "docx", "ppt", "pptx", "xls", "xlsx", "txt"
+    );
+
+    private static Set<String> AUDIO_FORMATS = Set.of(
+        "mp3", "wav", "aac", "flac", "ogg"
+    );
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,19 +31,17 @@ public class Attachment {
     @Enumerated(EnumType.ORDINAL)
     private FileType type;
 
+    public static boolean isDocumentFormat(String format) {
+        return DOCUMENT_FORMATS.contains(format.toLowerCase());
+    }
+
+    public static boolean isAudioFormat(String format) {
+        return AUDIO_FORMATS.contains(format.toLowerCase());
+    }
+
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean isImage() {
         return type == FileType.IMAGE;
-    }
-
-    public boolean isDocumentFormat(String format) {
-        return format != null && List.of("pdf", "doc", "docx", "ppt", "pptx", "xls", "xlsx", "txt")
-                .contains(format.toLowerCase());
-    }
-
-    public boolean isAudioFormat(String format) {
-        return format != null && List.of("mp3", "wav", "aac", "flac", "ogg")
-                .contains(format.toLowerCase());
     }
 
     public enum FileType {

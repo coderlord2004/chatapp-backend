@@ -7,6 +7,7 @@ import org.springframework.lang.Nullable;
 
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 @Entity
@@ -75,5 +76,9 @@ public class ChatRoom {
 
     public enum Type {
         DUO, GROUP
+    }
+
+    public boolean equal(ChatRoom other) {
+        return Objects.equals(this.id, other.id);
     }
 }
