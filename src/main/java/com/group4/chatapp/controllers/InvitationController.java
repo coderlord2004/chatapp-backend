@@ -3,6 +3,7 @@ package com.group4.chatapp.controllers;
 import com.group4.chatapp.dtos.invitation.InvitationDto;
 import com.group4.chatapp.dtos.invitation.InvitationReplyDto;
 import com.group4.chatapp.dtos.invitation.InvitationSendDto;
+import com.group4.chatapp.dtos.invitation.ReplyResponse;
 import com.group4.chatapp.services.invitations.InvitationService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
@@ -37,10 +38,10 @@ public class InvitationController {
 
     @PatchMapping("/{invitationId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void replyInvitation(
+    public ReplyResponse replyInvitation(
         @PathVariable long invitationId,
         @Valid @RequestBody InvitationReplyDto dto
     ) {
-        invitationService.replyInvitation(invitationId, dto.accept());
+        return invitationService.replyInvitation(invitationId, dto.accept());
     }
 }
