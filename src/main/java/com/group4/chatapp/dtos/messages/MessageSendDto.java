@@ -5,12 +5,12 @@ import com.group4.chatapp.models.Attachment;
 import com.group4.chatapp.models.ChatMessage;
 import com.group4.chatapp.models.ChatRoom;
 import com.group4.chatapp.models.User;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.lang.Nullable;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -25,7 +25,7 @@ public class MessageSendDto {
     @Nullable
     private String message;
 
-    @NotNull
+    @Nullable
     private List<MultipartFile> attachments;
 
     public ChatMessage toMessage(
@@ -47,10 +47,13 @@ public class MessageSendDto {
     }
 
     public void validate() {
-        if (StringUtils.isEmpty(message) && attachments.isEmpty()) {
+        if (
+            CollectionUtils.isEmpty(attachments)
+                && StringUtils.isEmpty(message)
+        ) {
             throw new ApiException(
                 HttpStatus.BAD_REQUEST,
-                "message and attachment should not be empty together!"
+                "message and attachment mustn't be empty together!"
             );
         }
     }
