@@ -89,8 +89,6 @@ class MessageChangesService {
     @Transactional
     public MessageSendResponseDto sendMessage(long roomId, MessageSendDto dto) {
 
-        checkService.validateDto(dto);
-
         var user = userService.getUserOrThrows();
         var chatRoom = checkService.receiveChatRoomAndCheck(roomId, user);
 
@@ -102,8 +100,6 @@ class MessageChangesService {
 
     @Transactional
     public void editMessage(long messageId, MessageSendDto dto) {
-
-        checkService.validateDto(dto);
 
         var message = checkService.getMessageAndCheckSender(messageId);
         if (message.isRecalled()) {
