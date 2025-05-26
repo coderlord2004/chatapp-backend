@@ -2,8 +2,10 @@ package com.group4.chatapp.models;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.lang.Nullable;
+import org.springframework.util.CollectionUtils;
 
 import java.sql.Timestamp;
 import java.util.List;
@@ -45,10 +47,6 @@ public class ChatMessage {
     @Column(nullable = false)
     private Status status;
 
-    public enum Status {
-        NORMAL, EDITED, RECALLED
-    }
-
     private boolean isStatusValid() {
 
         if (status == Status.RECALLED) {
@@ -61,7 +59,8 @@ public class ChatMessage {
             return false;
         }
 
-        return message != null;
+        return !StringUtils.isEmpty(message)
+            || !CollectionUtils.isEmpty(attachments);
     }
 
     @PrePersist
@@ -73,5 +72,9 @@ public class ChatMessage {
 
     public boolean isRecalled() {
         return status == Status.RECALLED;
+    }
+
+    public enum Status {
+        NORMAL, EDITED, RECALLED
     }
 }

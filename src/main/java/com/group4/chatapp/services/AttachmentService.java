@@ -5,6 +5,7 @@ import com.group4.chatapp.models.Attachment;
 import com.group4.chatapp.repositories.AttachmentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -22,7 +23,8 @@ public class AttachmentService {
 
         List<Map<String, ?>> uploadedFiles;
         try {
-            uploadedFiles = cloudinaryService.uploadMutiFile(dto.getAttachments());
+            var attachments = dto.getAttachments();
+            uploadedFiles = cloudinaryService.uploadMutiFile(attachments);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }

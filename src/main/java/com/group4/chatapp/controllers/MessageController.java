@@ -39,6 +39,7 @@ public class MessageController {
         @RequestParam(name = "room") long roomId,
         @Valid @ModelAttribute MessageSendDto dto
     ) {
+        dto.validate();
         return messageService.sendMessage(roomId, dto);
     }
 
@@ -48,6 +49,7 @@ public class MessageController {
         @PathVariable long messageId,
         @Valid @ModelAttribute MessageSendDto dto
     ) {
+        dto.validate();
         messageService.changeMessage(messageId, dto);
     }
 

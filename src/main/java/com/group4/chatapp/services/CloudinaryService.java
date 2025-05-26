@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
@@ -116,11 +117,7 @@ public class CloudinaryService {
     @Nullable
     public List<Map<String, ?>> uploadMutiFile(@Nullable List<MultipartFile> files) throws InterruptedException {
 
-        if (files == null) {
-            return null;
-        }
-
-        if (files.isEmpty()) {
+        if (CollectionUtils.isEmpty(files)) {
             return null;
         }
 

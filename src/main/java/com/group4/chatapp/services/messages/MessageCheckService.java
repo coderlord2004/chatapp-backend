@@ -68,13 +68,4 @@ class MessageCheckService {
 
         return message;
     }
-
-    public void validateDto(MessageSendDto dto) {
-        if (dto.getMessage().isEmpty() && dto.getAttachments() == null) {
-            throw new ApiException(
-                HttpStatus.BAD_REQUEST,
-                "Message and files are not empty!"
-            );
-        }
-    }
 }
