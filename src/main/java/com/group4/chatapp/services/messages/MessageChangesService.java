@@ -79,7 +79,9 @@ class MessageChangesService {
 
         var newMessage = dto.toMessage(
             getReplyToAndCheck(chatRoom, dto),
-            chatRoom, user, attachments,
+            chatRoom,
+            user,
+            attachments,
             ChatMessage.Status.NORMAL
         );
 
