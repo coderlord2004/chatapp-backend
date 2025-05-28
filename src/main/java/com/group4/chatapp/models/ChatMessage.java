@@ -44,8 +44,10 @@ public class ChatMessage {
     @OneToMany
     private List<Attachment> attachments;
 
-    @Column(nullable = false)
-    private Status status;
+    @Builder.Default
+    @Column(nullable = false, columnDefinition = "INT DEFAULT 0")
+    @Enumerated(EnumType.ORDINAL)
+    private Status status = Status.NORMAL;
 
     private boolean isStatusValid() {
 
