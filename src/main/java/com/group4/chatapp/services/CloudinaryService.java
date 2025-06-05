@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
@@ -19,7 +20,7 @@ import java.util.concurrent.*;
 public class CloudinaryService {
 
     private final Cloudinary cloudinary;
-    private final AttachmentService attachmentService;
+    private final FileTypeService fileTypeService;
 
     // upload avatar
     public String uploadFile(MultipartFile file) {
@@ -48,7 +49,7 @@ public class CloudinaryService {
 
         for (var file : files) {
 
-            var resourceType = attachmentService.getMimeType(file.getContentType());
+            var resourceType = fileTypeService.getMimeType(file.getContentType());
 
             futures.add(executor.submit(() -> {
                 try {
@@ -96,7 +97,7 @@ public class CloudinaryService {
                     "status", "success",
                     "secure_url", result.get("secure_url"),
                     "resource_type", result.get("resource_type"),
-                    "format", attachmentService.getFileExtension(currentFile.getOriginalFilename())
+                    "format", fileTypeService.getFileExtension(currentFile.getOriginalFilename())
                 );
 
             } catch (ExecutionException | InterruptedException e) {
@@ -116,11 +117,7 @@ public class CloudinaryService {
     @Nullable
     public List<Map<String, ?>> uploadMutiFile(@Nullable List<MultipartFile> files) throws InterruptedException {
 
-        if (files == null) {
-            return null;
-        }
-
-        if (files.isEmpty()) {
+        if (CollectionUtils.isEmpty(files)) {
             return null;
         }
 

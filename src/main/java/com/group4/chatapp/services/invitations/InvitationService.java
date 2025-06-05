@@ -2,6 +2,7 @@ package com.group4.chatapp.services.invitations;
 
 import com.group4.chatapp.dtos.invitation.InvitationDto;
 import com.group4.chatapp.dtos.invitation.InvitationSendDto;
+import com.group4.chatapp.dtos.invitation.ReplyResponse;
 import com.group4.chatapp.repositories.InvitationRepository;
 import com.group4.chatapp.services.UserService;
 import lombok.RequiredArgsConstructor;
@@ -36,7 +37,7 @@ public class InvitationService {
     }
 
     @Transactional
-    public void replyInvitation(long invitationId, boolean isAccepted) {
-        replyService.replyInvitation(invitationId, isAccepted);
+    public ReplyResponse replyInvitation(long invitationId, boolean isAccepted) {
+        return replyService.replyInvitation(invitationId, isAccepted);
     }
 }

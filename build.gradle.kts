@@ -21,7 +21,6 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-websocket")
-    implementation("com.cloudinary:cloudinary-http5:2.2.0")
 
     implementation("com.cloudinary:cloudinary-http5:2.2.0")
 

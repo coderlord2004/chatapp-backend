@@ -1,15 +1,19 @@
 package com.group4.chatapp.services.invitations;
 
-import com.group4.chatapp.dtos.invitation.InvitationDto;
+import com.group4.chatapp.dtos.ChatRoomDto;
+import com.group4.chatapp.dtos.invitation.InvitationWithNewRoomDto;
+import com.group4.chatapp.dtos.invitation.ReplyResponse;
 import com.group4.chatapp.exceptions.ApiException;
 import com.group4.chatapp.models.ChatRoom;
 import com.group4.chatapp.models.Invitation;
 import com.group4.chatapp.models.User;
 import com.group4.chatapp.repositories.ChatRoomRepository;
 import com.group4.chatapp.repositories.InvitationRepository;
+import com.group4.chatapp.services.ChatRoomService;
 import com.group4.chatapp.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.lang.Nullable;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +26,7 @@ import java.util.Set;
 class InvitationReplyService {
 
     private final UserService userService;
+    private final ChatRoomService chatRoomService;
 
     private final InvitationRepository repository;
     private final ChatRoomRepository chatRoomRepository;
@@ -38,7 +43,7 @@ class InvitationReplyService {
         repository.saveAndFlush(invitation);
     }
 
-    private void createDuoChatRoom(Invitation invitation) {
+    private ChatRoom createDuoChatRoom(Invitation invitation) {
 
         var members = Set.of(
             invitation.getSender(),
@@ -50,31 +55,28 @@ class InvitationReplyService {
             .members(members)
             .build();
 
-        chatRoomRepository.save(newChatRoom);
+        return chatRoomRepository.save(newChatRoom);
     }
 
-    private void addUserToChatroom(ChatRoom chatRoom, User user) {
-        chatRoom.getMembers().add(user);
-        chatRoomRepository.save(chatRoom);
-    }
-
-    private void createChatGroup(Set<User> members) {
+    private ChatRoom createChatGroup(Set<User> members) {
 
         var newGroupChat = ChatRoom.builder()
             .type(ChatRoom.Type.GROUP)
             .members(members)
             .build();
 
-        chatRoomRepository.save(newGroupChat);
+        return chatRoomRepository.save(newGroupChat);
     }
 
-    private void notifyUserReply(Invitation invitation) {
+    private void notifyUserReply(
+        Invitation invitation,
+        @Nullable ChatRoomDto newChatRoomDto
+    ) {
+
+        var isFriendRequest = invitation.getChatRoom() != null;
+        var needSendToMembers = isFriendRequest && invitation.isAccepted();
 
         var receiver = new ArrayList<User>();
-        var isFriendRequest = invitation.getChatRoom() != null;
-
-        var needSendToMembers = isFriendRequest
-            && invitation.getStatus() != Invitation.Status.ACCEPTED;
 
         if (needSendToMembers) {
             receiver.addAll(invitation.getChatRoom().getMembers());
@@ -82,22 +84,26 @@ class InvitationReplyService {
             receiver.add(invitation.getSender());
         }
 
+        if (!isFriendRequest) {
+            newChatRoomDto = null;
+        }
+
+        var sendObject = new InvitationWithNewRoomDto(invitation, newChatRoomDto);
+
         receiver.parallelStream()
-            .map(User::getUsername)
-            .forEach(username ->
+            .forEach(user ->
                 messagingTemplate.convertAndSendToUser(
-                    username,
+                    user.getUsername(),
                     "/queue/invitationReplies/",
-                    new InvitationDto(invitation)
+                    sendObject
                 )
             );
     }
 
-    private void onInvitationAccepted(Invitation invitation) {
+    private ChatRoom getNewChatRoom(Invitation invitation) {
 
         if (invitation.isFriendRequest()) {
-            createDuoChatRoom(invitation);
-            return;
+            return createDuoChatRoom(invitation);
         }
 
         var chatRoom = invitation.getChatRoom();
@@ -106,14 +112,14 @@ class InvitationReplyService {
         assert chatRoom != null;
 
         if (chatRoom.isChatGroup()) {
-            addUserToChatroom(chatRoom, receiver);
-            return;
+            chatRoom.getMembers().add(receiver);
+            return chatRoomRepository.save(chatRoom);
         }
 
         var members = new HashSet<>(chatRoom.getMembers());
         members.add(receiver);
 
-        createChatGroup(members);
+        return createChatGroup(members);
     }
 
     private Invitation getInvitationAndCheck(User user, long invitationId) {
@@ -142,16 +148,21 @@ class InvitationReplyService {
         return invitation;
     }
 
-    public void replyInvitation(long invitationId, boolean isAccepted) {
+    public ReplyResponse replyInvitation(long invitationId, boolean isAccepted) {
 
         var user = userService.getUserOrThrows();
         var invitation = getInvitationAndCheck(user, invitationId);
 
+        ChatRoomDto newChatRoomDto = null;
+
         if (isAccepted) {
-            onInvitationAccepted(invitation);
+            var newChatRoom = getNewChatRoom(invitation);
+            newChatRoomDto = chatRoomService.getRoomWithLatestMessage(newChatRoom);
         }
 
         updateInvitation(invitation, isAccepted);
-        notifyUserReply(invitation);
+        notifyUserReply(invitation, newChatRoomDto);
+
+        return new ReplyResponse(newChatRoomDto);
     }
 }

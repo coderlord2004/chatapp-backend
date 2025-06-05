@@ -38,6 +38,10 @@ public class Invitation {
         return status == Status.PENDING;
     }
 
+    public boolean isAccepted() {
+        return status == Status.ACCEPTED;
+    }
+
     public enum Status {
         PENDING, ACCEPTED, REJECTED
     }

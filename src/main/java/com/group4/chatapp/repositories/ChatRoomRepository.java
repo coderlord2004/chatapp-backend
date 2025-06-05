@@ -2,7 +2,6 @@ package com.group4.chatapp.repositories;
 
 import com.group4.chatapp.dtos.ChatRoomDto;
 import com.group4.chatapp.models.ChatRoom;
-import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -16,16 +15,18 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
         select new com.group4.chatapp.dtos.ChatRoomDto(r, msg)
         from ChatRoom r
         inner join r.members mem
-        inner join ChatMessage msg on msg.room = r
-        where mem.id = ?1
-          and msg.sentOn = (
-              select max(msg2.sentOn)
-              from ChatMessage msg2
-              where msg2.room = r
-          )
+        left join ChatMessage msg on msg.room.id = r.id
+        where mem.id = ?1 and (
+            msg.id is null or msg.id = (
+                select msg2.id
+                from ChatMessage msg2
+                where msg2.room.id = r.id
+                order by msg2.sentOn desc, msg2.id asc
+                limit 1
+            )
+        )
     """)
-    @EntityGraph(attributePaths = {"messages", "members"})
-    List<ChatRoomDto> findWithLatestMessage(long id);
+    List<ChatRoomDto> findWithLatestMessage(long userId);
 
     @Query("""
         select (count(c) > 0)

@@ -30,7 +30,7 @@ public class ChatRoomDto {
 
     private MessageReceiveDto latestMessage;
 
-    public ChatRoomDto(ChatRoom room, ChatMessage latestMessage) {
+    public ChatRoomDto(ChatRoom room,@Nullable ChatMessage latestMessage) {
 
         this(
             room.getId(),
@@ -39,12 +39,16 @@ public class ChatRoomDto {
             room.getMembers().stream().map(User::getUsername).toList(),
             room.getType(),
             room.getCreatedOn(),
-            new MessageReceiveDto(latestMessage)
+            null
         );
 
         var avatar = room.getAvatar();
         if (avatar != null) {
             this.avatar = new AttachmentDto(avatar);
+        }
+
+        if (latestMessage != null) {
+            this.latestMessage = new MessageReceiveDto(latestMessage);
         }
     }
 }

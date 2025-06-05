@@ -1,56 +1,61 @@
 package com.group4.chatapp.services;
 
+import com.group4.chatapp.dtos.messages.MessageSendDto;
 import com.group4.chatapp.models.Attachment;
+import com.group4.chatapp.repositories.AttachmentRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
+import org.springframework.util.CollectionUtils;
+
+import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
 public class AttachmentService {
-    private final Attachment attachment = new Attachment();
 
-    public String getFileExtension(String fileName) {
-        System.out.println("ext: " + fileName.substring(fileName.lastIndexOf(".") + 1));
-        return fileName.substring(fileName.lastIndexOf(".") + 1);
-    }
+    private final FileTypeService fileTypeService;
+    private final CloudinaryService cloudinaryService;
 
-    public String getMimeType(String contentType) {
-        if (contentType == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing content type");
+    private final AttachmentRepository attachmentRepository;
+
+    public List<Attachment> getAttachments(MessageSendDto dto) {
+
+        List<Map<String, ?>> uploadedFiles;
+        try {
+            var attachments = dto.getAttachments();
+            uploadedFiles = cloudinaryService.uploadMutiFile(attachments);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
-        if (contentType.startsWith("image/")) return "image";
-        if (contentType.startsWith("video/")) return "video";
-        else return "raw";
-    }
 
-    public Attachment.FileType checkTypeInFileType(String resourceType, String format) {
-        if (resourceType == null || format == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing file metadata");
+        if (uploadedFiles == null) {
+            return List.of();
         }
-        switch (resourceType.toLowerCase()) {
-            case "image":
-                return Attachment.FileType.IMAGE;
 
-            case "video":
-                return Attachment.FileType.VIDEO;
+        return uploadedFiles
+            .stream()
+            .map((file) -> {
 
-            case "raw":
-                // Nếu là tài liệu phổ biến thì xét là DOCUMENT
-                if (attachment.isDocumentFormat(format)) {
-                    return Attachment.FileType.DOCUMENT;
+                var isSuccess = file.get("status").equals("success");
+                if (!isSuccess) {
+                    return null;
                 }
 
-                // Nếu là file âm thanh
-                if (attachment.isAudioFormat(format)) {
-                    return Attachment.FileType.AUDIO;
-                }
+                var resourceType = (String) file.get("resource_type");
+                var source = (String) file.get("secure_url");
+                var format = (String) file.get("format");
 
-                return Attachment.FileType.RAW;
+                var type = fileTypeService.checkTypeInFileType(resourceType, format);
 
-            default:
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "File type is not supported!");
-        }
+                var attachment = Attachment.builder()
+                    .source(source)
+                    .type(type)
+                    .build();
+
+                return attachmentRepository.save(attachment);
+
+            })
+            .toList();
     }
 }
