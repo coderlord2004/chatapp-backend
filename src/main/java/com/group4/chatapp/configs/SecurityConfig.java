@@ -13,6 +13,7 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
@@ -21,9 +22,9 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationProvider;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 @Configuration
@@ -43,39 +44,35 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         return http
-            .csrf(CsrfConfigurer::disable)
-
-            .cors(cors ->
-                cors.configurationSource(req -> {
-
-                    var configuration = new CorsConfiguration();
-
-                    Arrays.stream(HttpMethod.values())
-                        .forEach(configuration::addAllowedMethod);
-
-                    configuration.setAllowCredentials(true);
-                    configuration.addAllowedOriginPattern("*");
-
-                    return configuration.applyPermitDefaultValues();
-                })
+            .csrf(AbstractHttpConfigurer::disable)
+            .authorizeHttpRequests(req -> req
+                    .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                    .requestMatchers("/api/v1/messages/**", "/api/v1/invitations/**").authenticated()
+                    .anyRequest().permitAll()
             )
-
-            .authorizeHttpRequests(request -> {
-
-                request
-                    .requestMatchers(
-                        "/api/v1/messages/**",
-                        "/api/v1/invitations/**"
-                    )
-                    .authenticated();
-
-                request.anyRequest().permitAll();
-            })
-
-            .httpBasic(Customizer.withDefaults())
             .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.decoder(jwtDecoder)))
+            .httpBasic(Customizer.withDefaults())
             .build();
     }
+
+    @Bean
+    public CorsFilter corsFilter() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowCredentials(true);
+        config.setAllowedOrigins(List.of(
+                "http://localhost:3000",
+                "https://nextchat-org.onrender.com"
+        ));
+        config.setAllowedHeaders(List.of("Authorization", "Content-Type", "*"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+
+        return new CorsFilter(source);
+    }
+
+
 
     @Bean
     public PasswordEncoder passwordEncoder() {
