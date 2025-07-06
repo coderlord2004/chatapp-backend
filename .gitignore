@@ -41,3 +41,6 @@ db.sqlite3
 
 ### SSL certificate ##
 src/main/resources/certs/
+
+env
+.env

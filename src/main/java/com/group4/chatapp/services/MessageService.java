@@ -23,6 +23,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -39,6 +40,8 @@ public class MessageService {
 
     private final AttachmentService attachmentService;
     private final AttachmentRepository attachmentRepository;
+
+    private final FileTypeService fileTypeService;
 
     private void sendToMembers(ChatRoom chatRoom, ChatMessage savedMessage) {
 
@@ -71,30 +74,30 @@ public class MessageService {
         }
 
         return uploadedFiles
-            .stream()
-            .map((file) -> {
+                .stream()
+                .map((file) -> {
+                    if (!"success".equals(file.get("status"))) return null;
 
-                if (!file.get("status").equals("success")) {
-                    return null;
-                }
+                    var resourceType = (String) file.get("resource_type");
+                    var format = (String) file.get("format");
 
-                var resourceType = (String) file.get("resource_type");
-                var format = (String) file.get("format");
+                    var attachment = Attachment.builder()
+                            .source((String) file.get("secure_url"))
+                            .type(fileTypeService.checkTypeInFileType(resourceType, format))
+                            .build();
 
-                var attachment = Attachment.builder()
-                    .source((String) file.get("secure_url"))
-                    .type(attachmentService.checkTypeInFileType(resourceType, format))
-                    .build();
+                    return attachmentRepository.save(attachment);
+                })
+                .filter(Objects::nonNull)
+                .map(a -> (Attachment) a)
+                .toList();
 
-                return attachmentRepository.save(attachment);
-            })
-            .toList();
     }
 
     private ChatMessage saveMessage(User user, ChatRoom chatRoom, MessageSendDto dto) {
 
         var attachments = getAttachments(dto);
-        var newMessage = dto.toMessage(chatRoom, user, attachments);
+        var newMessage = dto.toMessage(null, chatRoom, user, attachments, ChatMessage.Status.NORMAL);
 
         return messageRepository.save(newMessage);
     }
