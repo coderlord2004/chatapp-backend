@@ -51,9 +51,9 @@ class InvitationReplyService {
         );
 
         var newChatRoom = ChatRoom.builder()
-                .type(ChatRoom.Type.DUO)
-                .members(members)
-                .build();
+            .type(ChatRoom.Type.DUO)
+            .members(members)
+            .build();
 
         return chatRoomRepository.save(newChatRoom);
     }
@@ -84,10 +84,6 @@ class InvitationReplyService {
             receiver.add(invitation.getSender());
         }
 
-        if (!isFriendRequest) {
-            newChatRoomDto = null;
-        }
-        System.out.println("new chat room dto: " + newChatRoomDto);
         var sendObject = new InvitationWithNewRoomDto(invitation, newChatRoomDto);
 
         receiver.parallelStream()
@@ -103,7 +99,6 @@ class InvitationReplyService {
     private ChatRoom getNewChatRoom(Invitation invitation) {
 
         if (invitation.isFriendRequest()) {
-            System.out.println("đã tạo duo room.");
             return createDuoChatRoom(invitation);
         }
 
