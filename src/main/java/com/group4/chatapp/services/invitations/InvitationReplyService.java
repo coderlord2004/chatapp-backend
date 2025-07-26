@@ -84,10 +84,6 @@ class InvitationReplyService {
             receiver.add(invitation.getSender());
         }
 
-        if (!isFriendRequest) {
-            newChatRoomDto = null;
-        }
-
         var sendObject = new InvitationWithNewRoomDto(invitation, newChatRoomDto);
 
         receiver.parallelStream()
