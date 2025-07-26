@@ -5,6 +5,7 @@ import com.group4.chatapp.dtos.token.TokenRefreshDto;
 import com.group4.chatapp.dtos.token.TokenRefreshRequestDto;
 import com.group4.chatapp.dtos.user.UserDto;
 import com.group4.chatapp.dtos.user.UserWithAvatarDto;
+import com.group4.chatapp.models.User;
 import com.group4.chatapp.services.JwtsService;
 import com.group4.chatapp.services.UserService;
 import jakarta.validation.Valid;
@@ -38,6 +39,13 @@ public class UserController {
         @Valid @RequestBody TokenRefreshRequestDto dto
     ) {
         return jwtsService.refreshToken(dto.refresh());
+    }
+
+    @GetMapping("/info/")
+    public UserWithAvatarDto getUser() {
+        User user = userService.getUserOrThrows();
+
+        return new UserWithAvatarDto(user);
     }
 
     @GetMapping("/search/")

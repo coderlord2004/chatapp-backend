@@ -42,6 +42,7 @@ public class AttachmentService {
                     return null;
                 }
 
+                var fileName = (String) file.get("filename");
                 var resourceType = (String) file.get("resource_type");
                 var source = (String) file.get("secure_url");
                 var format = (String) file.get("format");
@@ -49,9 +50,10 @@ public class AttachmentService {
                 var type = fileTypeService.checkTypeInFileType(resourceType, format);
 
                 var attachment = Attachment.builder()
-                    .source(source)
-                    .type(type)
-                    .build();
+                        .name(fileName)
+                        .source(source)
+                        .type(type)
+                        .build();
 
                 return attachmentRepository.save(attachment);
 

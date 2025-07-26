@@ -31,6 +31,10 @@ public class FileTypeService {
             return "video";
         }
 
+        if (contentType.startsWith("audio/")) {
+            return "audio";
+        }
+
         return "raw";
     }
 

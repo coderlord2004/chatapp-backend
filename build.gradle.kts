@@ -25,9 +25,9 @@ dependencies {
     implementation("com.cloudinary:cloudinary-http5:2.2.0")
 
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.6")
+    implementation("io.agora:authentication:2.1.3")
 
     developmentOnly("org.springframework.boot:spring-boot-devtools")
-
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")
 

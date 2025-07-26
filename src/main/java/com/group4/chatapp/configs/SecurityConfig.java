@@ -64,7 +64,7 @@ public class SecurityConfig {
                 "https://nextchat-org.onrender.com"
         ));
         config.setAllowedHeaders(List.of("Authorization", "Content-Type", "*"));
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
