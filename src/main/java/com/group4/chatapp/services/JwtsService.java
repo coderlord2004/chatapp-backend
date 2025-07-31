@@ -3,8 +3,10 @@ package com.group4.chatapp.services;
 import com.group4.chatapp.dtos.token.TokenObtainPairDto;
 import com.group4.chatapp.dtos.token.TokenRefreshDto;
 import com.group4.chatapp.dtos.user.UserDto;
+import com.group4.chatapp.exceptions.ApiException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -54,6 +56,13 @@ public class JwtsService {
                 dto.username(), dto.password()
             )
         );
+
+        if (!authentication.isAuthenticated()) {
+            throw new ApiException(
+                HttpStatus.BAD_REQUEST,
+                "Username or password isn't correct!"
+            );
+        }
 
         return new TokenObtainPairDto(
             generateToken(authentication, accessTokenLifetime),

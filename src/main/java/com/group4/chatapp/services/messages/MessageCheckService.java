@@ -1,6 +1,5 @@
 package com.group4.chatapp.services.messages;
 
-import com.group4.chatapp.dtos.messages.MessageSendDto;
 import com.group4.chatapp.exceptions.ApiException;
 import com.group4.chatapp.models.ChatMessage;
 import com.group4.chatapp.models.ChatRoom;
@@ -15,7 +14,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @RequiredArgsConstructor
-class MessageCheckService {
+public class MessageCheckService {
 
     private final UserService userService;
 

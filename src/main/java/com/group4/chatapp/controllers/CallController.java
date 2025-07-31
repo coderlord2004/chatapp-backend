@@ -1,9 +1,12 @@
 package com.group4.chatapp.controllers;
 
+import com.group4.chatapp.dtos.callInvitation.CallInvitationSendDto;
+import com.group4.chatapp.services.CallService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -12,12 +15,13 @@ import org.springframework.web.bind.annotation.RestController;
         @SecurityRequirement(name = "basicAuth"),
         @SecurityRequirement(name = "bearerAuth")
 })
-@RequestMapping("/api/v1/video-call/")
+@RequestMapping("/api/v1/call/")
 @RequiredArgsConstructor
-public class VideoCallController {
+public class CallController {
+    private final CallService callService;
 
-    @PostMapping
-    public void sendInvitationInChannel() {
-
+    @PostMapping("/invitation/")
+    public void sendInvitationInChannel(@RequestBody CallInvitationSendDto dto) {
+        callService.sendInvitationToChannel(dto);
     }
 }

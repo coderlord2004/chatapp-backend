@@ -33,6 +33,8 @@ public class Attachment {
     @Enumerated(EnumType.ORDINAL)
     private FileType type;
 
+    private String format;
+
     public static boolean isDocumentFormat(String format) {
         return DOCUMENT_FORMATS.contains(format.toLowerCase());
     }

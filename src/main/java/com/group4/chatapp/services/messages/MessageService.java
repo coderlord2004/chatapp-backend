@@ -5,6 +5,7 @@ import com.group4.chatapp.dtos.messages.MessageSendDto;
 import com.group4.chatapp.dtos.messages.MessageSendResponseDto;
 import com.group4.chatapp.repositories.MessageRepository;
 import jakarta.transaction.Transactional;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -18,8 +19,8 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Getter
 public class MessageService {
-
     private final MessageChangesService sendService;
     private final MessageCheckService checkService;
     private final MessageRepository messageRepository;
