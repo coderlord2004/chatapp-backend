@@ -5,10 +5,7 @@ import com.group4.chatapp.services.CallService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @SecurityRequirements({
@@ -20,8 +17,18 @@ import org.springframework.web.bind.annotation.RestController;
 public class CallController {
     private final CallService callService;
 
-    @PostMapping("/invitation/")
+    @PostMapping("/invitation/send/")
     public void sendInvitationInChannel(@RequestBody CallInvitationSendDto dto) {
         callService.sendInvitationToChannel(dto);
+    }
+
+    @PostMapping("/invitation/cancel/")
+    public void cancelCallInvitation(@RequestBody CallInvitationSendDto dto) {
+        callService.cancelCallInvitation();
+    }
+
+    @PostMapping("/invitation/refuse/")
+    public void refuseCallInvitation(@RequestParam("caller") String caller) {
+        callService.refuseCallInvitation(caller);
     }
 }

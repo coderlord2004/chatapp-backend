@@ -1,12 +1,14 @@
 package com.group4.chatapp.dtos.callInvitation;
 
 import com.group4.chatapp.dtos.ChatRoomDto;
+import com.group4.chatapp.dtos.user.UserWithAvatarDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Getter
@@ -14,7 +16,8 @@ import java.util.Map;
 @NoArgsConstructor
 @Builder
 public class CallInvitationResponseDto {
+    private Long channelId;
+    private UserWithAvatarDto caller;
+    private List<String> membersUsername;
     private Boolean isUseVideo;
-    private String agoraToken;
-    private Map<String, Object> chatRoomDto;
 }

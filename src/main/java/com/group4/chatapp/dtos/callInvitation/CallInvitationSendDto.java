@@ -11,7 +11,5 @@ import java.util.List;
 @NoArgsConstructor
 public class CallInvitationSendDto {
     private Long channelId;
-    private List<String> membersUsername;
     private Boolean isUseVideo;
-    private String agoraToken;
 }
