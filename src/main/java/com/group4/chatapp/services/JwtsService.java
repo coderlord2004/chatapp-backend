@@ -23,7 +23,6 @@ import java.util.UUID;
 public class JwtsService {
 
     private final JwtEncoder jwtEncoder;
-    private final JwtDecoder jwtDecoder;
     private final AuthenticationManager authenticationManager;
 
     @Value("${jwts.access-token-lifetime}")
@@ -50,24 +49,23 @@ public class JwtsService {
     }
 
     public TokenObtainPairDto tokenObtainPair(UserDto dto) {
+        try {
+            var authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            dto.username(), dto.password()
+                    )
+            );
 
-        var authentication = authenticationManager.authenticate(
-            new UsernamePasswordAuthenticationToken(
-                dto.username(), dto.password()
-            )
-        );
-
-        if (!authentication.isAuthenticated()) {
+            return new TokenObtainPairDto(
+                    generateToken(authentication, accessTokenLifetime),
+                    generateToken(authentication, refreshTokenLifetime)
+            );
+        } catch (Exception e) {
             throw new ApiException(
-                HttpStatus.BAD_REQUEST,
-                "Username or password isn't correct!"
+                    HttpStatus.BAD_REQUEST,
+                    "Username or password isn't correct!"
             );
         }
-
-        return new TokenObtainPairDto(
-            generateToken(authentication, accessTokenLifetime),
-            generateToken(authentication, refreshTokenLifetime)
-        );
     }
 
     public TokenRefreshDto refreshToken(String refreshToken) {

@@ -1,14 +1,14 @@
 package com.group4.chatapp.controllers;
 
 import com.group4.chatapp.dtos.ChatRoomDto;
+import com.group4.chatapp.dtos.CreateChatRoomDto;
 import com.group4.chatapp.repositories.ChatRoomRepository;
 import com.group4.chatapp.services.ChatRoomService;
 import com.group4.chatapp.services.UserService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -18,12 +18,18 @@ import java.util.List;
     @SecurityRequirement(name = "bearerAuth")
 })
 @RequiredArgsConstructor
+@RequestMapping("/api/v1/")
 public class ChatRoomController {
 
     private final ChatRoomService chatRoomService;
 
-    @GetMapping("/api/v1/chatrooms/")
+    @GetMapping("/chatrooms/get/")
     public List<ChatRoomDto> listChatRooms() {
         return chatRoomService.listRoomsWithLatestMessage();
+    }
+
+    @PostMapping("/chatroom/create/")
+    public ChatRoomDto createChatRoom (@RequestBody CreateChatRoomDto dto) {
+        return chatRoomService.createChatRoom(dto);
     }
 }

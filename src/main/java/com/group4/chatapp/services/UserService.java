@@ -19,6 +19,7 @@ import org.springframework.web.ErrorResponseException;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -45,6 +46,19 @@ public class UserService {
             .build();
 
         repository.save(user);
+    }
+
+    public List<UserWithAvatarDto> getListFriend () {
+        User authUser = getUserOrThrows();
+        List<Object[]> friends = repository.getListFriend(authUser.getId());
+
+        return friends.stream().map(pair -> {
+            User sender = (User) pair[0];
+            User receiver = (User) pair[1];
+            User friend = Objects.equals(authUser.getId(), sender.getId()) ? receiver : sender;
+
+            return new UserWithAvatarDto(friend);
+        }).toList();
     }
 
     public Optional<User> getUserByAuthentication(@Nullable Authentication authentication) {

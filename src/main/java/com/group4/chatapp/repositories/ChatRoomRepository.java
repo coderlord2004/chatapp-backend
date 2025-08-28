@@ -28,7 +28,12 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
     """)
     List<ChatRoomDto> findWithLatestMessage(long userId);
 
-    @Query()
+    @Query("""
+        SELECT members.username
+        FROM ChatRoom c
+        INNER JOIN c.members members
+        WHERE c.id = ?1
+    """)
     List<String> findChatRoomWithUsername (long roomId);
 
     @Query("""

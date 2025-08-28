@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -39,13 +40,22 @@ class MessageChangesService {
 
         chatRoom.getMembers()
             .parallelStream()
-            .forEach((member) ->
+            .forEach((member) -> {
                 messagingTemplate.convertAndSendToUser(
-                    member.getUsername(),
-                    socketPath,
-                    messageReceiveDto
-                )
-            );
+                        member.getUsername(),
+                        socketPath,
+                        messageReceiveDto
+                );
+
+                messagingTemplate.convertAndSendToUser(
+                        member.getUsername(),
+                        "/queue/chat",
+                        Map.of(
+                              "roomId", chatRoom.getId(),
+                                "message", messageReceiveDto
+                        )
+                );
+            });
     }
 
     @Nullable

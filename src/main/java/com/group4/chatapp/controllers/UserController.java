@@ -48,6 +48,11 @@ public class UserController {
         return new UserWithAvatarDto(user);
     }
 
+    @GetMapping("/friends/")
+    public List<UserWithAvatarDto> getListFriend() {
+        return userService.getListFriend();
+    }
+
     @GetMapping("/search/")
     public List<UserWithAvatarDto> searchUser(
         @RequestParam(name = "q") String keyword,
