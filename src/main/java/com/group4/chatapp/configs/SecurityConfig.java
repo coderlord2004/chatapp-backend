@@ -47,7 +47,7 @@ public class SecurityConfig {
             .csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(req -> req
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                    .requestMatchers("/api/v1/messages/**", "/api/v1/invitations/**").authenticated()
+                    .requestMatchers("/api/v1/messages/**", "/api/v1/invitations/**", "/api/v1/comment/**", "/api/v1/reaction/**").authenticated()
                     .anyRequest().permitAll()
             )
             .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.decoder(jwtDecoder)))

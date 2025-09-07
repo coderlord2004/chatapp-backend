@@ -2,9 +2,12 @@ package com.group4.chatapp.repositories;
 
 import com.group4.chatapp.dtos.user.UserWithAvatarDto;
 import com.group4.chatapp.models.User;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -13,7 +16,22 @@ import java.util.stream.Stream;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
-    Stream<User> findByUsernameContaining(String keyword, PageRequest pageable);
+    @Query("""
+      SELECT u, i
+      FROM User u
+      LEFT JOIN Invitation i
+         ON ((i.sender = :authUser AND i.receiver = u)
+          OR (i.receiver = :authUser AND i.sender = u))
+      WHERE u.id <> :#{#authUser.id}
+        AND LOWER(u.username) LIKE LOWER(CONCAT('%', :keyword, '%'))
+    """)
+    Page<Object[]> searchUsersWithInvitations(
+            @Param("authUser") User authUser,
+            @Param("keyword") String keyword,
+            Pageable pageable);
+
+
+
     Optional<User> findByUsername(String username);
     boolean existsByUsername(String username);
 

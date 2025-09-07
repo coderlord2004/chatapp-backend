@@ -115,25 +115,31 @@ public class CloudinaryService {
     }
 
     @Nullable
-    public List<Map<String, ?>> uploadMutiFile(@Nullable List<MultipartFile> files) throws InterruptedException {
+    public List<Map<String, ?>> uploadMutiFile(@Nullable List<MultipartFile> files) {
+        try {
+            if (CollectionUtils.isEmpty(files)) {
+                return null;
+            }
 
-        if (CollectionUtils.isEmpty(files)) {
-            return null;
+            var executor = Executors.newFixedThreadPool(files.size());
+
+            var futures = getFutures(executor, files);
+            var uploadResults = collectUploadResults(files, futures);
+
+            executor.shutdown();
+            var isTimeout = executor.awaitTermination(1, TimeUnit.MINUTES);
+
+            // noinspection StatementWithEmptyBody
+            if (isTimeout) {
+                // TODO handle this
+            }
+
+            return uploadResults;
+        } catch (Exception e) {
+            throw new ApiException(
+                    HttpStatus.BAD_REQUEST,
+                    e.getMessage()
+            );
         }
-
-        var executor = Executors.newFixedThreadPool(files.size());
-
-        var futures = getFutures(executor, files);
-        var uploadResults = collectUploadResults(files, futures);
-
-        executor.shutdown();
-        var isTimeout = executor.awaitTermination(1, TimeUnit.MINUTES);
-
-        // noinspection StatementWithEmptyBody
-        if (isTimeout) {
-            // TODO handle this
-        }
-
-        return uploadResults;
     }
 }

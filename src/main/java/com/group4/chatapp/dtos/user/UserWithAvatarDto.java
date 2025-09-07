@@ -14,19 +14,27 @@ public class UserWithAvatarDto {
     private String username;
 
     @Nullable
-    private AttachmentDto avatar;
+    private String avatar;
+
+    @Nullable
+    private String coverPicture;
 
     public UserWithAvatarDto(User user) {
 
         this(
             user.getId(),
             user.getUsername(),
-            null
+            user.getAvatar(),
+            user.getCoverPicture()
         );
 
         var avatar = user.getAvatar();
+        var coverPicture = user.getCoverPicture();
         if (avatar != null) {
-            this.avatar = new AttachmentDto(avatar);
+            this.avatar = avatar;
+        }
+        if (coverPicture != null) {
+            this.coverPicture = coverPicture;
         }
     }
 }

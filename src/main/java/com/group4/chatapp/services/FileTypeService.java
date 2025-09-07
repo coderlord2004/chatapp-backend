@@ -5,12 +5,17 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class FileTypeService {
+    public boolean isImage(MultipartFile file) {
+        String contentType = getMimeType(file.getContentType());
+        return contentType.equalsIgnoreCase("image");
+    }
 
     public String getFileExtension(String fileName) {
         log.debug("ext: {}", fileName.substring(fileName.lastIndexOf(".") + 1));

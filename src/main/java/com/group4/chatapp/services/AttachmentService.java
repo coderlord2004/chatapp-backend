@@ -6,6 +6,7 @@ import com.group4.chatapp.repositories.AttachmentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
@@ -19,15 +20,10 @@ public class AttachmentService {
 
     private final AttachmentRepository attachmentRepository;
 
-    public List<Attachment> getAttachments(MessageSendDto dto) {
+    public List<Attachment> getAttachments(List<MultipartFile> attachments) {
 
         List<Map<String, ?>> uploadedFiles;
-        try {
-            var attachments = dto.getAttachments();
-            uploadedFiles = cloudinaryService.uploadMutiFile(attachments);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+        uploadedFiles = cloudinaryService.uploadMutiFile(attachments);
 
         if (uploadedFiles == null) {
             return List.of();

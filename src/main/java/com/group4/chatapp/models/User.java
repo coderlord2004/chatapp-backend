@@ -29,8 +29,26 @@ public class User implements UserDetails {
     private String password;
 
     @Nullable
-    @ManyToOne
-    private Attachment avatar;
+    private String avatar;
+
+    @Nullable
+    @Column(name = "cover_picture")
+    private String coverPicture;
+
+    @Nullable
+    private String bio;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<Post> posts;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<Comment> comments;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<Reaction> reactions;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<Share> shares;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -44,14 +62,6 @@ public class User implements UserDetails {
             return Objects.equals(this.id, user.id);
         } else {
             return false;
-        }
-    }
-
-    @PreUpdate
-    @PrePersist
-    private void checkAvatarFileType() {
-        if (avatar != null && !avatar.isImage()) {
-            throw new IllegalStateException("Avatar must be an image");
         }
     }
 }

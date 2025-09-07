@@ -85,7 +85,7 @@ class MessageChangesService {
 
     private ChatMessage saveMessage(User user, ChatRoom chatRoom, MessageSendDto dto) {
 
-        var attachments = attachmentService.getAttachments(dto);
+        var attachments = attachmentService.getAttachments(dto.getAttachments());
 
         var newMessage = dto.toMessage(
             getReplyToAndCheck(chatRoom, dto),
@@ -119,7 +119,7 @@ class MessageChangesService {
             );
         }
 
-        var attachments = attachmentService.getAttachments(dto);
+        var attachments = attachmentService.getAttachments(dto.getAttachments());
 
         var chatRoom = message.getRoom();
         var sender = message.getSender();

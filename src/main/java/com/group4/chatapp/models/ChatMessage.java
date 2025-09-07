@@ -41,7 +41,7 @@ public class ChatMessage {
     @CreationTimestamp
     private Timestamp sentOn;
 
-    @OneToMany
+    @OneToMany(mappedBy = "chatMessage", cascade = CascadeType.ALL)
     private List<Attachment> attachments;
 
     @Column(nullable = false)

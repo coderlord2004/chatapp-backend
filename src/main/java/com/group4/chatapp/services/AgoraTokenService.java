@@ -10,8 +10,6 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class AgoraTokenService {
-    private final JwtsService jwtsService;
-
     @Value("${AGORA_APP_ID}")
     private String AGORA_APP_ID;
 

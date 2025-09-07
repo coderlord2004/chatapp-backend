@@ -1,8 +1,11 @@
 package com.group4.chatapp.models;
 
+import com.group4.chatapp.models.PostAttachment.PostAttachment;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.lang.Nullable;
 
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -34,6 +37,13 @@ public class Attachment {
     private FileType type;
 
     private String format;
+
+    @ManyToOne
+    @JoinColumn(name = "chat_message_id")
+    private ChatMessage chatMessage;
+
+    @OneToMany(mappedBy = "attachment", cascade = CascadeType.ALL)
+    private List<PostAttachment> postAttachments;
 
     public static boolean isDocumentFormat(String format) {
         return DOCUMENT_FORMATS.contains(format.toLowerCase());
