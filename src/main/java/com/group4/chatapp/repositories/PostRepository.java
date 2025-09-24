@@ -16,7 +16,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query("""
             SELECT p
             FROM Post p
-            LEFT JOIN p.attachments a
+            LEFT JOIN p.attachments
             WHERE p.user = ?1
             ORDER BY p.createdOn DESC
             """)
@@ -25,8 +25,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query("""
             SELECT p
             FROM Post p
-            LEFT JOIN p.postAttachments pa
-            JOIN pa.attachment
+            LEFT JOIN p.attachments
             WHERE p.user.username = ?1 AND p.visibility = 'PUBLIC' AND p.visibility = 'FRIEND'
             ORDER BY p.createdOn DESC
             """)
@@ -35,8 +34,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query("""
             SELECT p
             FROM Post p
-            LEFT JOIN p.postAttachments pa
-            JOIN pa.attachment
+            LEFT JOIN p.attachments
             WHERE p.user.username = ?1 AND p.visibility = 'PUBLIC'
             ORDER BY p.createdOn DESC
             """)
@@ -45,8 +43,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query("""
             SELECT p
             FROM Post p
-            LEFT JOIN p.postAttachments pa
-            JOIN pa.attachment
+            LEFT JOIN p.attachments
             WHERE p.user.id = ?1
             ORDER BY p.createdOn DESC
             """)
@@ -55,8 +52,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query("""
            SELECT p
            FROM Post p
-           LEFT JOIN p.postAttachments pa
-           JOIN pa.attachment
+           LEFT JOIN p.attachments
            WHERE p.totalReactions >= 10
            ORDER BY p.totalReactions DESC
            """)

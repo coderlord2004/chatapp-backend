@@ -7,13 +7,28 @@ import org.mapstruct.*;
 
 import java.util.List;
 
-@Mapper(componentModel = "spring", uses = AttachmentMapper.class)
+@Mapper(componentModel = "spring", uses = {AttachmentMapper.class})
 public interface PostMapper {
     @Mapping(target = "topReactionTypes", ignore = true)
     PostResponseDto toDto(Post post);
 
     List<PostResponseDto> toDtoList(List<Post> posts);
-    
-    @Mapping(target = "topReactionTypes", source = "topReactionTypes")
-    PostResponseDto toDto(Post post, List<ReactionType> topReactionTypes);
+
+    default PostResponseDto toDto(Post post, List<ReactionType> topReactionTypes) {
+        PostResponseDto dto = toDto(post);
+        return new PostResponseDto(
+                dto.id(),
+                dto.caption(),
+                dto.captionBackground(),
+                dto.visibility(),
+                dto.createdOn(),
+                dto.totalReactions(),
+                topReactionTypes,
+                dto.totalComments(),
+                dto.totalShares(),
+                dto.attachments(),
+                dto.sharedPost(),
+                dto.postAttachmentType()
+        );
+    }
 }

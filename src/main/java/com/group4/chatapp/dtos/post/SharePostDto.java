@@ -2,13 +2,19 @@ package com.group4.chatapp.dtos.post;
 
 import com.group4.chatapp.models.Enum.PostVisibilityType;
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.lang.Nullable;
 
-public record SharePostDto (
+@AllArgsConstructor
+@NoArgsConstructor
+@Data
+public class SharePostDto {
         @Nullable
-        String caption,
+        private String caption;
         @NotNull
-        PostVisibilityType visibility,
+        private PostVisibilityType visibility;
         @NotNull
-        Long sharedPostId
-) {}
+        private Long sharedPostId;
+}

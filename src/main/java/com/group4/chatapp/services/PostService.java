@@ -110,6 +110,7 @@ public class PostService {
         return postMapper.toDto(post);
     }
 
+    @Transactional
     public void updatePost(Long postId, PostRequestDto dto) {
         Post post = getPost(postId);
         List<Attachment> attachments = post.getAttachments();
@@ -121,10 +122,11 @@ public class PostService {
                 Attachment attachment = attachments.get(i);
 
                 String source = attachment.getSource();
-                MultipartFile file = uploadFileDto.file();
+                MultipartFile file = uploadFileDto.getFile();
                 updateFileDtos.add(new UpdateFileDto(source, file));
 
-                attachment.setDescription(uploadFileDto.description());
+                attachment.setName(file.getOriginalFilename());
+                attachment.setDescription(uploadFileDto.getDescription());
             }
             cloudinaryService.updateMultiFile(updateFileDtos);
             post.setAttachments(attachments);
@@ -137,6 +139,7 @@ public class PostService {
         postRepository.save(post);
     }
 
+    @Transactional
     public void deletePost(Long postId) {
         Post post = getPost(postId);
         List<Attachment> attachments = post.getAttachments();
@@ -153,10 +156,10 @@ public class PostService {
 
     public void sharePost(SharePostDto dto) {
         User authUser = userService.getUserOrThrows();
-        Post post = getPost(dto.sharedPostId());
+        Post post = getPost(dto.getSharedPostId());
         Post newPost = Post.builder()
-                .caption(dto.caption())
-                .visibility(dto.visibility())
+                .caption(dto.getCaption())
+                .visibility(dto.getVisibility())
                 .sharedPost(post)
                 .postAttachmentType(PostAttachmentType.POST)
                 .user(authUser)

@@ -42,7 +42,7 @@ public class AttachmentService {
         }
 
         List<MultipartFile> files = uploadFileDtos.stream()
-                .map(UploadFileDto::file)
+                .map(UploadFileDto::getFile)
                 .filter(Objects::nonNull)
                 .toList();
 
@@ -59,7 +59,7 @@ public class AttachmentService {
                 continue;
             }
 
-            String description = uploadFileDtos.get(i).description();
+            String description = uploadFileDtos.get(i).getDescription();
             Attachment attachment = mapToAttachment(file, description);
 
             attachments.add(attachment);

@@ -12,7 +12,7 @@ public record AttachmentDto(
 
     public AttachmentDto(Attachment attachment) {
         this(
-                attachment.getSource(),
+                attachment.getName(),
                 attachment.getSource(),
                 attachment.getType(),
                 attachment.getFormat(),

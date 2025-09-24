@@ -23,13 +23,14 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-websocket")
 
     implementation("com.cloudinary:cloudinary:1.0.14")
-    implementation("org.mapstruct:mapstruct:1.6.3")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.6")
     implementation("io.agora:authentication:2.1.3")
+    implementation("org.mapstruct:mapstruct:1.6.3")
+    annotationProcessor("org.mapstruct:mapstruct-processor:1.6.3")
 
     developmentOnly("org.springframework.boot:spring-boot-devtools")
-    compileOnly("org.projectlombok:lombok")
-    annotationProcessor("org.projectlombok:lombok")
+    compileOnly("org.projectlombok:lombok:1.18.34")
+    annotationProcessor("org.projectlombok:lombok:1.18.34")
 
     runtimeOnly("org.postgresql:postgresql")
 
