@@ -2,6 +2,7 @@ package com.group4.chatapp.repositories;
 
 import com.group4.chatapp.models.Enum.ReactionType;
 import com.group4.chatapp.models.Enum.TargetType;
+import com.group4.chatapp.models.Post;
 import com.group4.chatapp.models.Reaction;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -35,11 +36,5 @@ public interface ReactionRepository extends JpaRepository<Reaction, Long> {
             """)
     List<ReactionType> getTopReactionType(Long targetId, TargetType targetType, Pageable pageable);
 
-    @Query("""
-            SELECT COUNT(r.user)
-            FROM Reaction r
-            WHERE r.targetId = ?1 AND r.targetType = ?2
-            """)
-    Long countTotalReactions(Long targetId, TargetType targetType);
 
 }

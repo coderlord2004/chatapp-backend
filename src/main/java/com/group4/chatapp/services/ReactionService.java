@@ -3,19 +3,24 @@ package com.group4.chatapp.services;
 import com.group4.chatapp.dtos.ReactionDto;
 import com.group4.chatapp.models.Enum.ReactionType;
 import com.group4.chatapp.models.Enum.TargetType;
+import com.group4.chatapp.models.Post;
 import com.group4.chatapp.models.Reaction;
 import com.group4.chatapp.models.User;
+import com.group4.chatapp.repositories.ContentRepository;
 import com.group4.chatapp.repositories.ReactionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(makeFinal = true)
 public class ReactionService {
     private UserService userService;
     private ReactionRepository reactionRepository;
+    private ContentRepository contentRepository;
 
     public void saveReaction(ReactionDto reactionDto) {
         User authUser = userService.getUserOrThrows();
@@ -25,6 +30,7 @@ public class ReactionService {
             String reactionType = String.valueOf(reaction.getReactionType());
             if (reactionType.equalsIgnoreCase(reactionDto.getReactionType())) {
                 reactionRepository.delete(reaction);
+                contentRepository.decreaseReactions(reactionDto.getTargetId());
             } else {
                 reaction.setReactionType(ReactionType.valueOf(reactionDto.getReactionType()));
                 reactionRepository.save(reaction);
@@ -37,10 +43,11 @@ public class ReactionService {
                     .user(authUser)
                     .build();
             reactionRepository.save(reaction);
+            contentRepository.increaseReactions(reaction.getTargetId());
         }
     }
 
-    public void getTotalReactionsOfPost() {
-
+    public List<ReactionType> getTotalReactionsOfPost(Post post) {
+        return reactionRepository.getTopReactionType(post.getId(), TargetType.POST, PageRequest.of(0, 3));
     }
 }

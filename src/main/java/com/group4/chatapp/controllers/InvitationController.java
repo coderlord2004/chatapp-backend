@@ -44,4 +44,14 @@ public class InvitationController {
     ) {
         return invitationService.replyInvitation(invitationId, dto.accept());
     }
+
+    @PostMapping("/follow/")
+    public void followUser(@RequestParam("userId") Long userId) {
+        invitationService.followUser(userId);
+    }
+
+    @PostMapping("/unfollow/")
+    public void unFollowUser(@RequestParam("userId") Long userId) {
+        invitationService.unFollowUser(userId);
+    }
 }

@@ -16,10 +16,51 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query("""
             SELECT p
             FROM Post p
-            JOIN p.postAttachments pa
-            JOIN pa.attachment a
+            LEFT JOIN p.attachments a
             WHERE p.user = ?1
             ORDER BY p.createdOn DESC
             """)
-    List<Post> findPostsByUser(User authUser, Pageable pageable);
+    List<Post> getPostsByAuthUser(User authUser, Pageable pageable);
+
+    @Query("""
+            SELECT p
+            FROM Post p
+            LEFT JOIN p.postAttachments pa
+            JOIN pa.attachment
+            WHERE p.user.username = ?1 AND p.visibility = 'PUBLIC' AND p.visibility = 'FRIEND'
+            ORDER BY p.createdOn DESC
+            """)
+    List<Post> getPostsIfIsFriend(String username, Pageable pageable);
+
+    @Query("""
+            SELECT p
+            FROM Post p
+            LEFT JOIN p.postAttachments pa
+            JOIN pa.attachment
+            WHERE p.user.username = ?1 AND p.visibility = 'PUBLIC'
+            ORDER BY p.createdOn DESC
+            """)
+    List<Post> getPostsIfIsNotFriend(String username, Pageable pageable);
+
+    @Query("""
+            SELECT p
+            FROM Post p
+            LEFT JOIN p.postAttachments pa
+            JOIN pa.attachment
+            WHERE p.user.id = ?1
+            ORDER BY p.createdOn DESC
+            """)
+    List<Post> getNewPostByUserId(Long userId, Pageable pageable);
+
+    @Query("""
+           SELECT p
+           FROM Post p
+           LEFT JOIN p.postAttachments pa
+           JOIN pa.attachment
+           WHERE p.totalReactions >= 10
+           ORDER BY p.totalReactions DESC
+           """)
+    List<Post> getPostsByTopReaction(Pageable pageable);
+
+
 }

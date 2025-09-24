@@ -14,7 +14,7 @@ import org.springframework.web.server.ResponseStatusException;
 public class FileTypeService {
     public boolean isImage(MultipartFile file) {
         String contentType = getMimeType(file.getContentType());
-        return contentType.equalsIgnoreCase("image");
+        return !contentType.equalsIgnoreCase("image");
     }
 
     public String getFileExtension(String fileName) {

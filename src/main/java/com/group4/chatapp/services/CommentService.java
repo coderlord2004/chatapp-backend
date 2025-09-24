@@ -7,6 +7,7 @@ import com.group4.chatapp.models.Comment;
 import com.group4.chatapp.models.Enum.TargetType;
 import com.group4.chatapp.models.User;
 import com.group4.chatapp.repositories.CommentRepository;
+import com.group4.chatapp.repositories.ContentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.http.HttpStatus;
@@ -20,6 +21,7 @@ import java.util.List;
 public class CommentService {
     private CommentRepository commentRepository;
     private UserService userService;
+    private ContentRepository contentRepository;
 
     public void createComment(CommentCreationDto dto) {
         User authUser = userService.getUserOrThrows();
@@ -33,6 +35,7 @@ public class CommentService {
                     .build();
 
             commentRepository.save(comment);
+            contentRepository.increaseComments(dto.getTargetId());
         } else {
             throw new ApiException(
                     HttpStatus.BAD_REQUEST,

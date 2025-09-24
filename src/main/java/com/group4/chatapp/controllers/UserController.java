@@ -1,14 +1,12 @@
 package com.group4.chatapp.controllers;
 
-import com.group4.chatapp.dtos.post.PostCreationRequestDto;
-import com.group4.chatapp.dtos.post.PostResponseDto;
 import com.group4.chatapp.dtos.token.TokenObtainPairDto;
 import com.group4.chatapp.dtos.token.TokenRefreshDto;
 import com.group4.chatapp.dtos.token.TokenRefreshRequestDto;
 import com.group4.chatapp.dtos.user.UserDto;
+import com.group4.chatapp.dtos.user.UserInformationDto;
 import com.group4.chatapp.dtos.user.UserWithAvatarDto;
 import com.group4.chatapp.dtos.user.UserWithInvitationDto;
-import com.group4.chatapp.models.User;
 import com.group4.chatapp.services.JwtsService;
 import com.group4.chatapp.services.UserService;
 import jakarta.validation.Valid;
@@ -47,11 +45,14 @@ public class UserController {
         return jwtsService.refreshToken(dto.refresh());
     }
 
+    @GetMapping("/my-info/")
+    public UserInformationDto getAuthUser() {
+        return userService.getAuthUser();
+    }
+    
     @GetMapping("/info/")
-    public UserWithAvatarDto getUser() {
-        User user = userService.getUserOrThrows();
-
-        return new UserWithAvatarDto(user);
+    public UserInformationDto getUser(@RequestParam("username") String username) {
+        return userService.getUser(username);
     }
 
     @GetMapping("/friends/")
@@ -77,13 +78,5 @@ public class UserController {
         return Map.of("cover_picture_url", userService.updateCoverPicture(coverPicture));
     }
 
-    @GetMapping("/posts/get/")
-    public List<PostResponseDto> getPosts(@RequestParam(value = "page", defaultValue = "1") int page){
-        return userService.getPosts(page);
-    }
 
-    @PostMapping(value = "/posts/create/", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public PostResponseDto createPost(@ModelAttribute PostCreationRequestDto dto) {
-        return userService.createPost(dto);
-    }
 }

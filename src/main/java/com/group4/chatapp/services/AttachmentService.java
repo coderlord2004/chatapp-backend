@@ -1,15 +1,15 @@
 package com.group4.chatapp.services;
 
-import com.group4.chatapp.dtos.messages.MessageSendDto;
+import com.group4.chatapp.dtos.UploadFileDto;
 import com.group4.chatapp.models.Attachment;
+import com.group4.chatapp.models.Attachment.FileType;
 import com.group4.chatapp.repositories.AttachmentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -17,44 +17,75 @@ public class AttachmentService {
 
     private final FileTypeService fileTypeService;
     private final CloudinaryService cloudinaryService;
-
     private final AttachmentRepository attachmentRepository;
 
-    public List<Attachment> getAttachments(List<MultipartFile> attachments) {
-
-        List<Map<String, ?>> uploadedFiles;
-        uploadedFiles = cloudinaryService.uploadMutiFile(attachments);
-
-        if (uploadedFiles == null) {
-            return List.of();
+    public List<Attachment> saveFiles(List<MultipartFile> files) {
+        if (files == null || files.isEmpty()) {
+            return Collections.emptyList();
         }
 
-        return uploadedFiles
-            .stream()
-            .map((file) -> {
+        List<Map<String, ?>> uploadedFiles = cloudinaryService.uploadMultiFile(files);
+        if (uploadedFiles == null || uploadedFiles.isEmpty()) {
+            return Collections.emptyList();
+        }
 
-                var isSuccess = file.get("status").equals("success");
-                if (!isSuccess) {
-                    return null;
-                }
+        return uploadedFiles.stream()
+                .filter(file -> "success".equals(file.get("status")))
+                .map(this::mapToAttachment)
+                .map(attachmentRepository::save)
+                .collect(Collectors.toList());
+    }
 
-                var fileName = (String) file.get("filename");
-                var source = (String) file.get("secure_url");
+    public List<Attachment> saveFilesWithDescription(List<UploadFileDto> uploadFileDtos) {
+        if (uploadFileDtos == null || uploadFileDtos.isEmpty()) {
+            return Collections.emptyList();
+        }
 
-                var resourceType = (String) file.get("resource_type");
-                var format = (String) file.get("format");
-                var type = fileTypeService.checkTypeInFileType(resourceType, format);
+        List<MultipartFile> files = uploadFileDtos.stream()
+                .map(UploadFileDto::file)
+                .filter(Objects::nonNull)
+                .toList();
 
-                var attachment = Attachment.builder()
-                        .name(fileName)
-                        .source(source)
-                        .type(type)
-                        .format(format)
-                        .build();
+        List<Map<String, ?>> uploadedFiles = cloudinaryService.uploadMultiFile(files);
+        if (uploadedFiles == null || uploadedFiles.isEmpty()) {
+            return Collections.emptyList();
+        }
 
-                return attachmentRepository.save(attachment);
+        List<Attachment> attachments = new ArrayList<>();
+        for (int i = 0; i < uploadedFiles.size(); i++) {
+            Map<String, ?> file = uploadedFiles.get(i);
 
-            })
-            .toList();
+            if (!"success".equals(file.get("status"))) {
+                continue;
+            }
+
+            String description = uploadFileDtos.get(i).description();
+            Attachment attachment = mapToAttachment(file, description);
+
+            attachments.add(attachment);
+        }
+
+        return attachments;
+    }
+
+    private Attachment mapToAttachment(Map<String, ?> file) {
+        return mapToAttachment(file, null);
+    }
+
+    private Attachment mapToAttachment(Map<String, ?> file, String description) {
+        String fileName = (String) file.get("filename");
+        String source = (String) file.get("secure_url");
+        String resourceType = (String) file.get("resource_type");
+        String format = (String) file.get("format");
+
+        FileType type = fileTypeService.checkTypeInFileType(resourceType, format);
+
+        return Attachment.builder()
+                .name(fileName)
+                .source(source)
+                .type(type)
+                .format(format)
+                .description(description)
+                .build();
     }
 }

@@ -27,7 +27,7 @@ public class Invitation {
     private ChatRoom chatRoom;
 
     @Column(nullable = false)
-    @Enumerated(EnumType.ORDINAL)
+    @Enumerated(EnumType.STRING)
     private Status status;
 
     public boolean isFriendRequest() {
@@ -43,6 +43,6 @@ public class Invitation {
     }
 
     public enum Status {
-        PENDING, ACCEPTED, REJECTED
+        PENDING, ACCEPTED, REJECTED, FOLLOW
     }
 }

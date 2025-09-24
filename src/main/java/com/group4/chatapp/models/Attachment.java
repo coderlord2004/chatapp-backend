@@ -1,11 +1,8 @@
 package com.group4.chatapp.models;
 
-import com.group4.chatapp.models.PostAttachment.PostAttachment;
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.lang.Nullable;
 
-import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -14,7 +11,7 @@ import java.util.Set;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Attachment {
+public class Attachment extends Content {
 
     private static Set<String> DOCUMENT_FORMATS = Set.of(
         "pdf", "doc", "docx", "ppt", "pptx", "xls", "xlsx", "txt"
@@ -23,10 +20,6 @@ public class Attachment {
     private static Set<String> AUDIO_FORMATS = Set.of(
         "mp3", "wav", "aac", "flac", "ogg"
     );
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
 
     private String name;
 
@@ -37,13 +30,16 @@ public class Attachment {
     private FileType type;
 
     private String format;
+    private String description;
 
     @ManyToOne
     @JoinColumn(name = "chat_message_id")
     private ChatMessage chatMessage;
 
-    @OneToMany(mappedBy = "attachment", cascade = CascadeType.ALL)
-    private List<PostAttachment> postAttachments;
+    @ManyToOne
+    @JoinColumn(name = "post_id")
+    private Post post;
+
 
     public static boolean isDocumentFormat(String format) {
         return DOCUMENT_FORMATS.contains(format.toLowerCase());

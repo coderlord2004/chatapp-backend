@@ -1,21 +1,11 @@
 package com.group4.chatapp.services;
 
-import com.group4.chatapp.dtos.PostAttachmentResponseDto;
-import com.group4.chatapp.dtos.post.PostCreationRequestDto;
-import com.group4.chatapp.dtos.PostAttachmentDto;
-import com.group4.chatapp.dtos.post.PostResponseDto;
 import com.group4.chatapp.dtos.user.UserDto;
+import com.group4.chatapp.dtos.user.UserInformationDto;
 import com.group4.chatapp.dtos.user.UserWithAvatarDto;
 import com.group4.chatapp.dtos.user.UserWithInvitationDto;
 import com.group4.chatapp.exceptions.ApiException;
-import com.group4.chatapp.models.Attachment;
-import com.group4.chatapp.models.Enum.PostVisibilityType;
-import com.group4.chatapp.models.Enum.ReactionType;
-import com.group4.chatapp.models.Enum.TargetType;
 import com.group4.chatapp.models.Invitation;
-import com.group4.chatapp.models.Post;
-import com.group4.chatapp.models.PostAttachment.PostAttachment;
-import com.group4.chatapp.models.PostAttachment.PostAttachmentID;
 import com.group4.chatapp.models.User;
 import com.group4.chatapp.repositories.*;
 import lombok.RequiredArgsConstructor;
@@ -35,7 +25,6 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -45,12 +34,7 @@ public class UserService {
     private UserRepository repository;
     private PasswordEncoder passwordEncoder;
     private FileTypeService fileTypeService;
-    private AttachmentService attachmentService;
-    private PostRepository postRepository;
-    private PostAttachmentRepository postAttachmentRepository;
-    private ReactionRepository reactionRepository;
-    private CommentRepository commentRepository;
-    private ShareRepository shareRepository;
+    private InvitationRepository invitationRepository;
 
     public void createUser(UserDto dto) {
 
@@ -69,6 +53,31 @@ public class UserService {
             .build();
 
         repository.save(user);
+    }
+
+    public UserInformationDto getAuthUser() {
+        User user = getUserOrThrows();
+        Long totalFollowers = invitationRepository.countFollowersByUserId(user.getId());
+        Long totalFollowing = invitationRepository.countFollowingByUserId(user.getId());
+        return new UserInformationDto(user, totalFollowers, totalFollowing);
+    }
+
+    public UserInformationDto getUser(String username) {
+        User user = repository.findByUsername(username).orElseThrow(() -> new ApiException(
+                HttpStatus.BAD_REQUEST,
+                "User is not found!"
+        ));
+
+        Long totalFollowers = invitationRepository.countFollowersByUserId(user.getId());
+        Long totalFollowing = invitationRepository.countFollowingByUserId(user.getId());
+        return new UserInformationDto(user, totalFollowers, totalFollowing);
+    }
+
+    public User getUser(Long userId) {
+        return repository.findById(userId).orElseThrow(() -> new ApiException(
+                HttpStatus.BAD_REQUEST,
+                "User is not found!"
+        ));
     }
 
     public List<UserWithAvatarDto> getListFriend () {
@@ -139,7 +148,7 @@ public class UserService {
     }
 
     public String updateAvatar(MultipartFile avatar) {
-        if(!fileTypeService.isImage(avatar) || avatar.isEmpty()) {
+        if(fileTypeService.isImage(avatar) || avatar.isEmpty()) {
             throw new ApiException(
                     HttpStatus.BAD_REQUEST,
                     "File is invalid!"
@@ -154,7 +163,7 @@ public class UserService {
     }
 
     public String updateCoverPicture(MultipartFile coverPicture) {
-        if(!fileTypeService.isImage(coverPicture) && coverPicture.isEmpty()) {
+        if(fileTypeService.isImage(coverPicture) && coverPicture.isEmpty()) {
             throw new ApiException(
                     HttpStatus.BAD_REQUEST,
                     "File is invalid!"
@@ -168,74 +177,5 @@ public class UserService {
         return coverPictureUrl;
     }
 
-    @Transactional(readOnly = true)
-    public List<PostResponseDto> getPosts(int page) {
-        User authUser = getUserOrThrows();
-        List<Post> posts = postRepository.findPostsByUser(authUser, PageRequest.of(page-1, 20));
-        List<PostResponseDto> postResponseDtos = new ArrayList<>();
-        for (Post post : posts) {
-            Long totalReactions = reactionRepository.countTotalReactions(post.getId(), TargetType.POST);
-            Long totalComments = commentRepository.getTotalComments(post.getId(), TargetType.POST);
-            Long totalShares = shareRepository.getTotalShares(post.getId(), TargetType.POST);
-            List<ReactionType> reactionTypes = reactionRepository.getTopReactionType(post.getId(), TargetType.POST, PageRequest.of(0, 3));
-            postResponseDtos.add(new PostResponseDto(post, totalReactions, reactionTypes, totalComments, totalShares));
-        }
 
-        return postResponseDtos;
-    }
-
-    public PostResponseDto createPost(PostCreationRequestDto dto) {
-        if (dto.getCaption() == null && dto.getAttachments() == null) {
-            throw new ApiException(
-                    HttpStatus.BAD_REQUEST,
-                    "Caption and Attachments are not null!"
-            );
-        }
-
-        User authUser = getUserOrThrows();
-        assert dto.getAttachments() != null;
-
-        List<MultipartFile> files = new ArrayList<>();
-        dto.getAttachments().forEach(postAttachmentDto -> {
-            files.add(postAttachmentDto.getAttachment());
-        });
-        List<Attachment> attachments = attachmentService.getAttachments(files);
-        Post post = Post.builder()
-                .caption(dto.getCaption())
-                .captionBackground(dto.getCaptionBackground())
-                .visibility(PostVisibilityType.valueOf(dto.getVisibility()))
-                .user(authUser)
-                .build();
-        post = postRepository.save(post);
-        List<PostAttachmentResponseDto> postAttachmentResponseDtos = new ArrayList<>();
-        for (int i=0; i<dto.getAttachments().size(); i++) {
-            PostAttachmentDto postAttachmentDto = dto.getAttachments().get(i);
-            Attachment attachment = attachments.get(i);
-            if (attachment != null) {
-                PostAttachmentID id = new PostAttachmentID(post.getId(), attachment.getId());
-                PostAttachment postAttachment = PostAttachment.builder()
-                        .id(id)
-                        .post(post)
-                        .attachment(attachment)
-                        .description(postAttachmentDto.getDescription())
-                        .build();
-                postAttachmentRepository.save(postAttachment);
-
-                PostAttachmentResponseDto postAttachmentResponseDto = PostAttachmentResponseDto.builder()
-                        .description(postAttachmentDto.getDescription())
-                        .attachmentUrl(attachment.getSource())
-                        .attachmentType(String.valueOf(attachment.getType()))
-                        .build();
-                postAttachmentResponseDtos.add(postAttachmentResponseDto);
-            }
-        }
-
-        return PostResponseDto.builder()
-                .id(post.getId())
-                .caption(post.getCaption())
-                .createdOn(post.getCreatedOn())
-                .captionBackground(post.getCaptionBackground())
-                .attachments(postAttachmentResponseDtos)
-                .build();
-    }
 }

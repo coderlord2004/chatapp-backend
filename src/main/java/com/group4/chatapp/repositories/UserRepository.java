@@ -30,8 +30,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
             @Param("keyword") String keyword,
             Pageable pageable);
 
-
-
     Optional<User> findByUsername(String username);
     boolean existsByUsername(String username);
 
@@ -40,7 +38,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
         FROM Invitation i
         JOIN i.sender sender
         JOIN i.receiver receiver
-        WHERE i.status = 1 AND (sender.id = ?1 OR receiver.id = ?1)
+        WHERE i.status = 'ACCEPTED' AND (sender.id = ?1 OR receiver.id = ?1)
     """)
     List<Object[]> getListFriend (Long userId);
 }

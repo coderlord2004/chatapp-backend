@@ -1,34 +1,27 @@
 package com.group4.chatapp.models;
 
+import com.group4.chatapp.models.Enum.PostAttachmentType;
 import com.group4.chatapp.models.Enum.PostVisibilityType;
-import com.group4.chatapp.models.PostAttachment.PostAttachment;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.sql.Timestamp;
 import java.util.List;
-import java.util.Set;
-
 
 @Entity
-@Table(name = "posts")
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Post {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
+@Table(name = "posts")
+public class Post extends Content {
     @Lob
     private String caption;
 
     @Column(name = "caption_background")
-    @Builder.Default
-    private Integer captionBackground = null;
+    private Integer captionBackground;
 
     @CreationTimestamp
     @Column(name = "created_on")
@@ -39,9 +32,18 @@ public class Post {
     private PostVisibilityType visibility = PostVisibilityType.PUBLIC;
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
-    private List<PostAttachment> postAttachments;
+    private List<Attachment> attachments;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "user_id")
     private User user;
+
+    @ManyToOne
+    @JoinColumn(name = "shared_post_id")
+    private Post sharedPost;
+
+    @Enumerated(value = EnumType.STRING)
+    @Column(name = "post_attachment_type")
+    @Builder.Default
+    private PostAttachmentType postAttachmentType = PostAttachmentType.MEDIA;
 }

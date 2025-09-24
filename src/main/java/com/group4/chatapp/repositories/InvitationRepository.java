@@ -19,6 +19,13 @@ public interface InvitationRepository extends JpaRepository<Invitation, Long> {
     Stream<Invitation> findByReceiverId(long id);
 
     @Query("""
+            SELECT i
+            FROM Invitation i
+            WHERE i.sender.id = ?1 AND i.receiver.id = ?2 AND i.status = 'FOLLOW'
+            """)
+    Invitation getFollowingUser(Long senderId, Long receiverId);
+
+    @Query("""
         select (count(i) > 0) from Invitation i
         where i.sender.id = ?1
           and i.receiver.id = ?2
@@ -45,4 +52,30 @@ public interface InvitationRepository extends JpaRepository<Invitation, Long> {
         long chatRoomId,
         Invitation.Status status
     );
+
+    @Query("""
+        select (count(i) > 0) from Invitation i
+        where ((i.sender.username = ?1 and i.receiver.username = ?2)
+          or (i.sender.username = ?2 and i.receiver.username = ?1))
+          and i.chatRoom is null
+          and i.status = 'ACCEPTED'
+    """)
+    boolean isFriend(
+        String sender,
+        String receiver
+    );
+
+    @Query("""
+            SELECT COUNT(i)
+            FROM Invitation i
+            WHERE i.receiver.id = ?1 AND i.status = 'FOLLOW'
+            """)
+    Long countFollowersByUserId(Long userId);
+
+    @Query("""
+            SELECT COUNT(i)
+            FROM Invitation i
+            WHERE i.sender.id = ?1 AND i.status = 'FOLLOW'
+            """)
+    Long countFollowingByUserId(Long userId);
 }

@@ -1,6 +1,7 @@
 package com.group4.chatapp.services;
 
 import com.cloudinary.Cloudinary;
+import com.group4.chatapp.dtos.UpdateFileDto;
 import com.group4.chatapp.exceptions.ApiException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -9,10 +10,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.io.IOException;
+import java.util.*;
 import java.util.concurrent.*;
 
 @Service
@@ -22,11 +21,19 @@ public class CloudinaryService {
     private final Cloudinary cloudinary;
     private final FileTypeService fileTypeService;
 
-    // upload avatar
+    public String getPublicIdByUrl(String url) {
+        if (url == null || url.isEmpty()) return null;
+
+        int index = url.lastIndexOf("image/");
+        if (index == -1) return null;
+
+        return url.substring(index, url.lastIndexOf('.'));
+    }
+
     public String uploadFile(MultipartFile file) {
         try {
-
-            var options = Map.of("folder", "Image/");
+            String folderName = fileTypeService.getMimeType(file.getContentType());
+            var options = Map.of("folder", folderName);
 
             return (String) cloudinary.uploader()
                 .upload(file.getBytes(), options)
@@ -36,6 +43,19 @@ public class CloudinaryService {
             throw new ApiException(
                 HttpStatus.BAD_REQUEST,
                 e.getMessage()
+            );
+        }
+    }
+
+    public void deleteFile(String url) {
+        try {
+            String publicId = getPublicIdByUrl(url);
+            cloudinary.uploader().destroy(publicId, new HashMap<>());
+
+        } catch (Exception e) {
+            throw new ApiException(
+                    HttpStatus.BAD_REQUEST,
+                    e.getMessage()
             );
         }
     }
@@ -115,7 +135,7 @@ public class CloudinaryService {
     }
 
     @Nullable
-    public List<Map<String, ?>> uploadMutiFile(@Nullable List<MultipartFile> files) {
+    public List<Map<String, ?>> uploadMultiFile(@Nullable List<MultipartFile> files) {
         try {
             if (CollectionUtils.isEmpty(files)) {
                 return null;
@@ -129,7 +149,6 @@ public class CloudinaryService {
             executor.shutdown();
             var isTimeout = executor.awaitTermination(1, TimeUnit.MINUTES);
 
-            // noinspection StatementWithEmptyBody
             if (isTimeout) {
                 // TODO handle this
             }
@@ -141,5 +160,41 @@ public class CloudinaryService {
                     e.getMessage()
             );
         }
+    }
+
+    public void updateMultiFile(List<UpdateFileDto> updateFileDtos) {
+        updateFileDtos.forEach(updateFileDto -> {
+            try {
+                String folderName = fileTypeService.getMimeType(updateFileDto.file().getContentType());
+                String publicId = getPublicIdByUrl(updateFileDto.publicId());
+                var options = Map.of(
+                        "public_id", publicId,
+                        "folder", folderName,
+                        "overwrite", true,
+                        "invalidate", true
+                );
+
+                cloudinary.uploader().upload(updateFileDto.file().getBytes(), options);
+
+            } catch (Exception e) {
+                throw new ApiException(
+                        HttpStatus.BAD_REQUEST,
+                        e.getMessage()
+                );
+            }
+        });
+    }
+
+    public void deleteMultiFile(List<String> publicIds) {
+        publicIds.forEach(publicId -> {
+            try {
+                cloudinary.uploader().destroy(publicId, Map.of("invalidate", true));
+            } catch (IOException e) {
+                throw new ApiException(
+                        HttpStatus.BAD_REQUEST,
+                        e.getMessage()
+                );
+            }
+        });
     }
 }
