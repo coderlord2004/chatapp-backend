@@ -45,28 +45,4 @@ public class InvitationService {
     public ReplyResponse replyInvitation(long invitationId, boolean isAccepted) {
         return replyService.replyInvitation(invitationId, isAccepted);
     }
-
-    public void followUser(Long userId) {
-        User authUser = userService.getUserOrThrows();
-        User receiver = userService.getUser(userId);
-        Invitation invitation = Invitation.builder()
-                .sender(authUser)
-                .receiver(receiver)
-                .status(Invitation.Status.FOLLOW)
-                .build();
-        repository.save(invitation);
-    }
-
-    public void unFollowUser(Long userId) {
-        User authUser = userService.getUserOrThrows();
-        Invitation invitation = repository.getFollowingUser(authUser.getId(), userId);
-        if (invitation != null) {
-            repository.delete(invitation);
-        } else {
-            throw new ApiException(
-                    HttpStatus.BAD_REQUEST,
-                    "You don't follow this user!"
-            );
-        }
-    }
 }

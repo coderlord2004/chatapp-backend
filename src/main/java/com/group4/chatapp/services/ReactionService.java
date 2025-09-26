@@ -47,7 +47,7 @@ public class ReactionService {
         }
     }
 
-    public List<ReactionType> getTotalReactionsOfPost(Post post) {
+    public List<ReactionType> getTopReactionType(Post post) {
         return reactionRepository.getTopReactionType(post.getId(), TargetType.POST, PageRequest.of(0, 3));
     }
 }

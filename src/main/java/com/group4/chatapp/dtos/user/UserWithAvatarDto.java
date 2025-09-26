@@ -16,25 +16,12 @@ public class UserWithAvatarDto {
     @Nullable
     private String avatar;
 
-    @Nullable
-    private String coverPicture;
+    private Boolean isOnline;
 
     public UserWithAvatarDto(User user) {
-
-        this(
-            user.getId(),
-            user.getUsername(),
-            user.getAvatar(),
-            user.getCoverPicture()
-        );
-
-        var avatar = user.getAvatar();
-        var coverPicture = user.getCoverPicture();
-        if (avatar != null) {
-            this.avatar = avatar;
-        }
-        if (coverPicture != null) {
-            this.coverPicture = coverPicture;
-        }
+        this.id = user.getId();
+        this.username = user.getUsername();
+        this.avatar = user.getAvatar();
+        this.isOnline = user.getIsOnline();
     }
 }

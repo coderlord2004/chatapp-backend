@@ -43,6 +43,6 @@ public class Invitation {
     }
 
     public enum Status {
-        PENDING, ACCEPTED, REJECTED, FOLLOW
+        PENDING, ACCEPTED, REJECTED
     }
 }

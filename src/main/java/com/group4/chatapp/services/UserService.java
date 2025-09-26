@@ -35,6 +35,7 @@ public class UserService {
     private PasswordEncoder passwordEncoder;
     private FileTypeService fileTypeService;
     private InvitationRepository invitationRepository;
+    private PostRepository postRepository;
 
     public void createUser(UserDto dto) {
 
@@ -59,7 +60,8 @@ public class UserService {
         User user = getUserOrThrows();
         Long totalFollowers = invitationRepository.countFollowersByUserId(user.getId());
         Long totalFollowing = invitationRepository.countFollowingByUserId(user.getId());
-        return new UserInformationDto(user, totalFollowers, totalFollowing);
+        Long totalPosts = postRepository.countPostByUserId(user.getId());
+        return new UserInformationDto(user, totalFollowers, totalFollowing, totalPosts);
     }
 
     public UserInformationDto getUser(String username) {
@@ -70,7 +72,8 @@ public class UserService {
 
         Long totalFollowers = invitationRepository.countFollowersByUserId(user.getId());
         Long totalFollowing = invitationRepository.countFollowingByUserId(user.getId());
-        return new UserInformationDto(user, totalFollowers, totalFollowing);
+        Long totalPosts = postRepository.countPostByUserId(user.getId());
+        return new UserInformationDto(user, totalFollowers, totalFollowing, totalPosts);
     }
 
     public User getUser(Long userId) {
@@ -83,6 +86,19 @@ public class UserService {
     public List<UserWithAvatarDto> getListFriend () {
         User authUser = getUserOrThrows();
         List<Object[]> friends = repository.getListFriend(authUser.getId());
+
+        return friends.stream().map(pair -> {
+            User sender = (User) pair[0];
+            User receiver = (User) pair[1];
+            User friend = Objects.equals(authUser.getId(), sender.getId()) ? receiver : sender;
+
+            return new UserWithAvatarDto(friend);
+        }).toList();
+    }
+
+    public List<UserWithAvatarDto> getOnlineFriends () {
+        User authUser = getUserOrThrows();
+        List<Object[]> friends = repository.getOnlineFriends(authUser.getId());
 
         return friends.stream().map(pair -> {
             User sender = (User) pair[0];

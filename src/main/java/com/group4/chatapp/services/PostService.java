@@ -1,13 +1,10 @@
 package com.group4.chatapp.services;
 
-import com.group4.chatapp.dtos.UpdateFileDto;
-import com.group4.chatapp.dtos.UploadFileDto;
 import com.group4.chatapp.dtos.post.PostRequestDto;
 import com.group4.chatapp.dtos.post.PostResponseDto;
 import com.group4.chatapp.dtos.post.SharePostDto;
 import com.group4.chatapp.dtos.user.UserWithAvatarDto;
 import com.group4.chatapp.exceptions.ApiException;
-import com.group4.chatapp.mappers.PostMapper;
 import com.group4.chatapp.models.Attachment;
 import com.group4.chatapp.models.Enum.PostAttachmentType;
 import com.group4.chatapp.models.Enum.PostVisibilityType;
@@ -20,10 +17,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -39,7 +33,6 @@ public class PostService {
     private UserService userService;
     private InvitationRepository invitationRepository;
     private ReactionService reactionService;
-    private PostMapper postMapper;
     private CloudinaryService cloudinaryService;
 
     public Post getPost(Long postId) {
@@ -60,10 +53,12 @@ public class PostService {
     }
 
     public List<PostResponseDto> getPostsByAuthUser(User authUser, int page) {
+        System.out.println("query: getPostsByAuthUser");
         List<Post> posts = postRepository.getPostsByAuthUser(authUser, PageRequest.of(page-1, 20));
         List<PostResponseDto> postResponseDtos = new ArrayList<>();
         for (Post post : posts) {
-            postResponseDtos.add(postMapper.toDto(post, reactionService.getTotalReactionsOfPost(post)));
+            System.out.println("query: getTopReactionType");
+            postResponseDtos.add(new PostResponseDto(post, reactionService.getTopReactionType(post)));
         }
 
         return postResponseDtos;
@@ -81,7 +76,7 @@ public class PostService {
             posts = postRepository.getPostsIfIsNotFriend(username, pageRequest);
         }
 
-        return posts.stream().map(post -> postMapper.toDto(post, reactionService.getTotalReactionsOfPost(post))).toList();
+        return posts.stream().map(post -> new PostResponseDto(post, reactionService.getTopReactionType(post))).toList();
     }
 
     public PostResponseDto createPost(PostRequestDto dto) {
@@ -107,36 +102,13 @@ public class PostService {
         post.setAttachments(attachments);
         post = postRepository.save(post);
 
-        return postMapper.toDto(post);
+        return new PostResponseDto(post);
     }
 
     @Transactional
     public void updatePost(Long postId, PostRequestDto dto) {
-        Post post = getPost(postId);
-        List<Attachment> attachments = post.getAttachments();
-
-        if (dto.getAttachments() != null && !dto.getAttachments().isEmpty()) {
-            List<UpdateFileDto> updateFileDtos = new ArrayList<>();
-            for (int i=0; i<dto.getAttachments().size(); i++) {
-                UploadFileDto uploadFileDto = dto.getAttachments().get(i);
-                Attachment attachment = attachments.get(i);
-
-                String source = attachment.getSource();
-                MultipartFile file = uploadFileDto.getFile();
-                updateFileDtos.add(new UpdateFileDto(source, file));
-
-                attachment.setName(file.getOriginalFilename());
-                attachment.setDescription(uploadFileDto.getDescription());
-            }
-            cloudinaryService.updateMultiFile(updateFileDtos);
-            post.setAttachments(attachments);
-        }
-        post.setCaption(dto.getCaption());
-        post.setVisibility(dto.getVisibility());
-        post.setCaptionBackground(dto.getCaptionBackground());
-        post.setCreatedOn(Timestamp.valueOf(LocalDateTime.now()));
-
-        postRepository.save(post);
+        deletePost(postId);
+        createPost(dto);
     }
 
     @Transactional
@@ -169,7 +141,7 @@ public class PostService {
 
     @Transactional(readOnly = true)
     public List<PostResponseDto> getNewsFeed(int page) {
-        List<Post> topPostReactions = postRepository.getPostsByTopReaction(PageRequest.of(page - 1, 5));
+        List<Post> topPostReactions = postRepository.getPostsByTopReactions(PageRequest.of(page - 1, 5));
         List<UserWithAvatarDto> friends = userService.getListFriend();
 
         List<Post> latestFriendPosts = new ArrayList<>();
@@ -192,7 +164,7 @@ public class PostService {
 
         return shuffled.stream()
                 .filter(Objects::nonNull)
-                .map(post -> postMapper.toDto(post, reactionService.getTotalReactionsOfPost(post)))
+                .map(post -> new PostResponseDto(post, reactionService.getTopReactionType(post)))
                 .toList();
     }
 }

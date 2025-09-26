@@ -57,7 +57,7 @@ public class UserController {
 
     @GetMapping("/friends/")
     public List<UserWithAvatarDto> getListFriend() {
-        return userService.getListFriend();
+        return userService.getOnlineFriends();
     }
 
     @GetMapping("/search/")

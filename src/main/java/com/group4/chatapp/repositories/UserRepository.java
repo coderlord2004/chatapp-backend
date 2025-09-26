@@ -41,4 +41,13 @@ public interface UserRepository extends JpaRepository<User, Long> {
         WHERE i.status = 'ACCEPTED' AND (sender.id = ?1 OR receiver.id = ?1)
     """)
     List<Object[]> getListFriend (Long userId);
+
+    @Query("""
+            SELECT sender, receiver
+            FROM Invitation i
+            JOIN i.sender sender
+            JOIN i.receiver receiver
+            WHERE i.status = 'ACCEPTED' AND (sender.id = ?1 OR receiver.id = ?1) AND sender.isOnline = true AND receiver.isOnline = true
+            """)
+    List<Object[]> getOnlineFriends(Long userId);
 }

@@ -2,25 +2,56 @@ package com.group4.chatapp.dtos.post;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.group4.chatapp.dtos.AttachmentDto;
+import com.group4.chatapp.dtos.user.UserWithAvatarDto;
 import com.group4.chatapp.models.Enum.PostAttachmentType;
 import com.group4.chatapp.models.Enum.PostVisibilityType;
 import com.group4.chatapp.models.Enum.ReactionType;
+import com.group4.chatapp.models.Post;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public record PostResponseDto(
-        Long id,
-        String caption,
-        Integer captionBackground,
-        PostVisibilityType visibility,
-        Timestamp createdOn,
-        Long totalReactions,
-        List<ReactionType> topReactionTypes,
-        Long totalComments,
-        Long totalShares,
-        List<AttachmentDto> attachments,
-        PostResponseDto sharedPost,
-        PostAttachmentType postAttachmentType
-) {}
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class PostResponseDto {
+    private Long id;
+    private String caption;
+    private Integer captionBackground;
+    private PostVisibilityType visibility;
+    private Timestamp createdOn;
+    private Long totalReactions;
+    private List<ReactionType> topReactionTypes;
+    private Long totalComments;
+    private Long totalShares;
+    private List<AttachmentDto> attachments;
+    private PostResponseDto sharedPost;
+    private PostAttachmentType postAttachmentType;
+    private UserWithAvatarDto author;
+
+    public PostResponseDto(Post post) {
+        this.id = post.getId();
+        this.caption = post.getCaption();
+        this.captionBackground = post.getCaptionBackground();
+        this.visibility = post.getVisibility();
+        this.createdOn = post.getCreatedOn();
+        this.totalReactions = post.getTotalReactions();
+        this.topReactionTypes = new ArrayList<>();
+        this.totalComments = post.getTotalComments();
+        this.totalShares = post.getTotalShares();
+        this.attachments = post.getAttachments().stream().map(AttachmentDto::new).toList();
+        this.sharedPost = post.getSharedPost() != null ? new PostResponseDto(post.getSharedPost()) : null;
+        this.postAttachmentType = post.getPostAttachmentType();
+        this.author = new UserWithAvatarDto(post.getUser());
+    }
+
+    public PostResponseDto(Post post, List<ReactionType> topReactionTypes) {
+        this(post);
+        this.topReactionTypes = topReactionTypes;
+    }
+}
