@@ -1,12 +1,13 @@
 package com.group4.chatapp.controllers;
 
-import com.group4.chatapp.dtos.ApiResponse;
 import com.group4.chatapp.dtos.post.PostRequestDto;
 import com.group4.chatapp.dtos.post.PostResponseDto;
 import com.group4.chatapp.dtos.post.SharePostDto;
-import com.group4.chatapp.services.PostService;
+import com.group4.chatapp.models.Post;
+import com.group4.chatapp.services.posts.PostService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.quartz.SchedulerException;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,8 +29,9 @@ public class PostController {
     }
 
     @PostMapping(value = "/create/", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public PostResponseDto createPost(@ModelAttribute PostRequestDto dto) {
-        return postService.createPost(dto);
+    public ResponseEntity<String> createPost(@ModelAttribute PostRequestDto dto) {
+        postService.createPost(dto);
+        return ResponseEntity.ok("Create post successfully!");
     }
 
     @PutMapping(value = "/update/", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

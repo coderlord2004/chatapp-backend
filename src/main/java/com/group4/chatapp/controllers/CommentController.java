@@ -1,7 +1,8 @@
 package com.group4.chatapp.controllers;
 
-import com.group4.chatapp.dtos.comment.CommentCreationDto;
+import com.group4.chatapp.dtos.comment.CommentRequestDto;
 import com.group4.chatapp.dtos.comment.CommentResponseDto;
+import com.group4.chatapp.dtos.comment.UpdateCommentDto;
 import com.group4.chatapp.models.Enum.TargetType;
 import com.group4.chatapp.services.CommentService;
 import jakarta.validation.Valid;
@@ -17,12 +18,22 @@ public class CommentController {
     private final CommentService commentService;
 
     @PostMapping("/create/")
-    public void createComment(@Valid @RequestBody CommentCreationDto dto) {
+    public void createComment(@Valid @RequestBody CommentRequestDto dto) {
         commentService.createComment(dto);
     }
 
     @GetMapping("/get/")
     public List<CommentResponseDto> getComments(@RequestParam("targetId") Long targetId, @RequestParam("targetType") TargetType targetType) {
         return commentService.getComments(targetId, targetType);
+    }
+
+    @PatchMapping("/update/")
+    public void updateComment(@RequestBody UpdateCommentDto dto) {
+        commentService.updateComment(dto);
+    }
+
+    @DeleteMapping("/delete/")
+    public void deleteComment(@RequestParam("commentId") Long commentId) {
+        commentService.deleteComment(commentId);
     }
 }

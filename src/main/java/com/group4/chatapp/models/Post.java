@@ -7,6 +7,7 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -31,6 +32,19 @@ public class Post extends Content {
     @Builder.Default
     private PostVisibilityType visibility = PostVisibilityType.PUBLIC;
 
+    @Enumerated(value = EnumType.STRING)
+    @Column(name = "post_attachment_type")
+    @Builder.Default
+    private PostAttachmentType postAttachmentType = PostAttachmentType.MEDIA;
+
+    @Enumerated(value = EnumType.STRING)
+    private PostStatus status;
+
+    @Column(name = "scheduled_at")
+    private LocalDateTime scheduledAt;
+
+    private LocalDateTime publishedAt;
+
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
     private List<Attachment> attachments;
 
@@ -42,8 +56,9 @@ public class Post extends Content {
     @JoinColumn(name = "shared_post_id")
     private Post sharedPost;
 
-    @Enumerated(value = EnumType.STRING)
-    @Column(name = "post_attachment_type")
-    @Builder.Default
-    private PostAttachmentType postAttachmentType = PostAttachmentType.MEDIA;
+    public enum PostStatus {
+        PUBLISHED,
+        SCHEDULED,
+        DRAFT
+    }
 }

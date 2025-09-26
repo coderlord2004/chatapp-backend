@@ -1,4 +1,4 @@
-package com.group4.chatapp.services;
+package com.group4.chatapp.services.posts;
 
 import com.group4.chatapp.dtos.post.PostRequestDto;
 import com.group4.chatapp.dtos.post.PostResponseDto;
@@ -11,13 +11,19 @@ import com.group4.chatapp.models.Enum.PostVisibilityType;
 import com.group4.chatapp.models.Post;
 import com.group4.chatapp.models.User;
 import com.group4.chatapp.repositories.*;
+import com.group4.chatapp.services.AttachmentService;
+import com.group4.chatapp.services.CloudinaryService;
+import com.group4.chatapp.services.ReactionService;
+import com.group4.chatapp.services.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.quartz.SchedulerException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -34,6 +40,7 @@ public class PostService {
     private InvitationRepository invitationRepository;
     private ReactionService reactionService;
     private CloudinaryService cloudinaryService;
+    private PostSchedulerService schedulerService;
 
     public Post getPost(Long postId) {
         return postRepository.findById(postId).orElseThrow(() -> new ApiException(
@@ -53,11 +60,9 @@ public class PostService {
     }
 
     public List<PostResponseDto> getPostsByAuthUser(User authUser, int page) {
-        System.out.println("query: getPostsByAuthUser");
         List<Post> posts = postRepository.getPostsByAuthUser(authUser, PageRequest.of(page-1, 20));
         List<PostResponseDto> postResponseDtos = new ArrayList<>();
         for (Post post : posts) {
-            System.out.println("query: getTopReactionType");
             postResponseDtos.add(new PostResponseDto(post, reactionService.getTopReactionType(post)));
         }
 
@@ -79,16 +84,14 @@ public class PostService {
         return posts.stream().map(post -> new PostResponseDto(post, reactionService.getTopReactionType(post))).toList();
     }
 
-    public PostResponseDto createPost(PostRequestDto dto) {
+    public void createPost(PostRequestDto dto)  {
         if (dto.getCaption() == null && dto.getAttachments() == null) {
             throw new ApiException(
                     HttpStatus.BAD_REQUEST,
                     "Caption and Attachments are not null!"
             );
         }
-
         User authUser = userService.getUserOrThrows();
-
         Post post = Post.builder()
                 .caption(dto.getCaption())
                 .captionBackground(dto.getCaptionBackground())
@@ -99,10 +102,26 @@ public class PostService {
         for (Attachment attachment : attachments) {
             attachment.setPost(post);
         }
-        post.setAttachments(attachments);
-        post = postRepository.save(post);
 
-        return new PostResponseDto(post);
+        try {
+            if (dto.isScheduled()) {
+                post.setStatus(Post.PostStatus.SCHEDULED);
+                post.setScheduledAt(dto.getScheduledAt());
+                post.setAttachments(attachments);
+                post = postRepository.save(post);
+                schedulerService.schedulePost(post.getId(), post.getScheduledAt());
+            } else {
+                post.setStatus(Post.PostStatus.PUBLISHED);
+                post.setPublishedAt(LocalDateTime.now());
+                post.setAttachments(attachments);
+                postRepository.save(post);
+            }
+        } catch (SchedulerException e) {
+            throw new ApiException(
+                    HttpStatus.BAD_REQUEST,
+                    e.getMessage()
+            );
+        }
     }
 
     @Transactional
