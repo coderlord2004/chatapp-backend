@@ -2,7 +2,7 @@ package com.group4.chatapp.controllers;
 
 import com.group4.chatapp.dtos.comment.CommentRequestDto;
 import com.group4.chatapp.dtos.comment.CommentResponseDto;
-import com.group4.chatapp.dtos.comment.UpdateCommentDto;
+import com.group4.chatapp.dtos.comment.CommentDto;
 import com.group4.chatapp.models.Enum.TargetType;
 import com.group4.chatapp.services.CommentService;
 import jakarta.validation.Valid;
@@ -28,12 +28,17 @@ public class CommentController {
     }
 
     @PatchMapping("/update/")
-    public void updateComment(@RequestBody UpdateCommentDto dto) {
+    public void updateComment(@RequestBody CommentDto dto) {
         commentService.updateComment(dto);
     }
 
     @DeleteMapping("/delete/")
     public void deleteComment(@RequestParam("commentId") Long commentId) {
         commentService.deleteComment(commentId);
+    }
+
+    @PostMapping("/reply/")
+    public void replyComment(@RequestBody CommentDto dto) {
+        commentService.replyComment(dto);
     }
 }

@@ -2,7 +2,7 @@ package com.group4.chatapp.services;
 
 import com.group4.chatapp.dtos.comment.CommentRequestDto;
 import com.group4.chatapp.dtos.comment.CommentResponseDto;
-import com.group4.chatapp.dtos.comment.UpdateCommentDto;
+import com.group4.chatapp.dtos.comment.CommentDto;
 import com.group4.chatapp.exceptions.ApiException;
 import com.group4.chatapp.models.Comment;
 import com.group4.chatapp.models.Enum.TargetType;
@@ -59,7 +59,7 @@ public class CommentService {
         return comments.stream().map(CommentResponseDto::new).toList();
     }
 
-    public void updateComment(UpdateCommentDto dto) {
+    public void updateComment(CommentDto dto) {
         Comment comment = getComment(dto.getCommentId());
         comment.setContent(dto.getContent());
         comment.setCommentedAt(Timestamp.valueOf(LocalDateTime.now()));
@@ -70,5 +70,18 @@ public class CommentService {
         Comment comment = getComment(commentId);
         contentRepository.decreaseComments(comment.getTargetId());
         commentRepository.deleteById(commentId);
+    }
+
+    public void replyComment(CommentDto dto) {
+        Comment parentComment = getComment(dto.getCommentId());
+        Comment newComment = Comment.builder()
+                .content(dto.getContent())
+                .user(parentComment.getUser())
+                .targetId(parentComment.getTargetId())
+                .targetType(parentComment.getTargetType())
+                .parentComment(parentComment)
+                .build();
+        contentRepository.increaseComments(parentComment.getTargetId());
+        commentRepository.save(newComment);
     }
 }

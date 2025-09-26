@@ -20,20 +20,6 @@ spring:
     properties:
       hibernate:
         dialect: "org.hibernate.dialect.PostgreSQLDialect"
-  quartz:
-    job-store-type: jdbc
-    jdbc:
-      initialize-schema: always
-    properties:
-      org:
-        quartz:
-          scheduler:
-            instanceName: QuartzScheduler
-          jobStore:
-            class: org.quartz.impl.jdbcjobstore.JobStoreTX
-            driverDelegateClass: org.quartz.impl.jdbcjobstore.PostgreSQLDelegate
-            tablePrefix: QRTZ_
-            isClustered: true
 
   output:
     ansi:
@@ -45,6 +31,24 @@ spring:
       max-file-size: "100MB"
       max-request-size: "150MB"
       file-size-threshold: "2KB"
+  quartz:
+    job-store-type: jdbc   # Lưu job vào DB
+    jdbc:
+      initialize-schema: always   # Tạo bảng quartz_* nếu chưa có
+    properties:
+      org:
+        quartz:
+          jobStore:
+            dataSource: quartzDataSource
+            tablePrefix: QRTZ_
+            isClustered: false
+          dataSource:
+            quartzDataSource:
+              driver: com.mysql.cj.jdbc.Driver
+              URL: "${DB_URL}"
+              user: "${DB_USERNAME}"
+              password: "${DB_PASSWORD}"
+              maxConnections: 10
 
 server:
   port: "${PORT:8000}"

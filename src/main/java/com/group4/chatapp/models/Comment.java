@@ -35,4 +35,7 @@ public class Comment {
     @CreationTimestamp
     private Timestamp commentedAt;
 
+    @ManyToOne
+    @JoinColumn(name = "parent_comment_id")
+    private Comment parentComment;
 }

@@ -1,4 +1,4 @@
-package com.group4.chatapp.services.posts;
+package com.group4.chatapp.services;
 
 import com.group4.chatapp.dtos.post.PostRequestDto;
 import com.group4.chatapp.dtos.post.PostResponseDto;
@@ -11,10 +11,6 @@ import com.group4.chatapp.models.Enum.PostVisibilityType;
 import com.group4.chatapp.models.Post;
 import com.group4.chatapp.models.User;
 import com.group4.chatapp.repositories.*;
-import com.group4.chatapp.services.AttachmentService;
-import com.group4.chatapp.services.CloudinaryService;
-import com.group4.chatapp.services.ReactionService;
-import com.group4.chatapp.services.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.quartz.SchedulerException;

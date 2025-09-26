@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.sql.Timestamp;
+import java.util.List;
 
 @Data
 @Builder
@@ -18,11 +19,19 @@ public class CommentResponseDto {
     private String content;
     private UserWithAvatarDto users;
     private Timestamp commentedAt;
+    private CommentResponseDto parentComment;
+    private List<CommentResponseDto> childComments;
 
     public CommentResponseDto(Comment comment) {
         this.id = comment.getId();
         this.content = comment.getContent();
         this.users = new UserWithAvatarDto(comment.getUser());
         this.commentedAt = comment.getCommentedAt();
+        this.parentComment = new CommentResponseDto(comment.getParentComment());
+    }
+
+    public CommentResponseDto(Comment comment, List<CommentResponseDto> childComments) {
+        this(comment);
+        this.childComments = childComments;
     }
 }
