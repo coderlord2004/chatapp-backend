@@ -32,9 +32,9 @@ spring:
       max-request-size: "150MB"
       file-size-threshold: "2KB"
   quartz:
-    job-store-type: jdbc   # Lưu job vào DB
+    job-store-type: jdbc
     jdbc:
-      initialize-schema: always   # Tạo bảng quartz_* nếu chưa có
+      initialize-schema: never
     properties:
       org:
         quartz:
@@ -66,3 +66,6 @@ cloudinary:
   api-key: "${CLOUDINARY_API_KEY}"
   api-secret: "${CLOUDINARY_API_SECRET}"
   cloud-name: "${CLOUDINARY_CLOUD_NAME}"
+
+messages:
+  max-request: 30

@@ -76,8 +76,15 @@ public class UserService {
         return new UserInformationDto(user, totalFollowers, totalFollowing, totalPosts);
     }
 
-    public User getUser(Long userId) {
+    public User getUserById(Long userId) {
         return repository.findById(userId).orElseThrow(() -> new ApiException(
+                HttpStatus.BAD_REQUEST,
+                "User is not found!"
+        ));
+    }
+
+    public User getUserByUsername(String username) {
+        return repository.findByUsername(username).orElseThrow(() -> new ApiException(
                 HttpStatus.BAD_REQUEST,
                 "User is not found!"
         ));

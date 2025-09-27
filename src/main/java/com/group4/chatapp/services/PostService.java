@@ -6,6 +6,7 @@ import com.group4.chatapp.dtos.post.SharePostDto;
 import com.group4.chatapp.dtos.user.UserWithAvatarDto;
 import com.group4.chatapp.exceptions.ApiException;
 import com.group4.chatapp.models.Attachment;
+import com.group4.chatapp.models.ChatRoom;
 import com.group4.chatapp.models.Enum.PostAttachmentType;
 import com.group4.chatapp.models.Enum.PostVisibilityType;
 import com.group4.chatapp.models.Post;
@@ -100,12 +101,14 @@ public class PostService {
         }
 
         try {
-            if (dto.isScheduled()) {
+            if (dto.getIsScheduled()) {
+                System.out.println("scheduled at: " + dto.getScheduledAt());
+                System.out.println("now: " + LocalDateTime.now());
                 post.setStatus(Post.PostStatus.SCHEDULED);
                 post.setScheduledAt(dto.getScheduledAt());
                 post.setAttachments(attachments);
                 post = postRepository.save(post);
-                schedulerService.schedulePost(post.getId(), post.getScheduledAt());
+                schedulerService.schedulePost(post.getId(), dto.getScheduledAt());
             } else {
                 post.setStatus(Post.PostStatus.PUBLISHED);
                 post.setPublishedAt(LocalDateTime.now());

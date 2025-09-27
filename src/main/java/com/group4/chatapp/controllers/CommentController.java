@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/comment/")
@@ -23,8 +24,20 @@ public class CommentController {
     }
 
     @GetMapping("/get/")
-    public List<CommentResponseDto> getComments(@RequestParam("targetId") Long targetId, @RequestParam("targetType") TargetType targetType) {
-        return commentService.getComments(targetId, targetType);
+    public List<Map<String, Object>> getComments(
+            @RequestParam("targetId") Long targetId,
+            @RequestParam("targetType") TargetType targetType,
+            @RequestParam(value = "page", defaultValue = "1") int page
+    ) {
+        return commentService.getRootCommentsOfPost(targetId, targetType, page);
+    }
+
+    @GetMapping("/child/get/")
+    public List<Map<String, Object>> getChildComments(
+            @RequestParam("commentId") Long commentId,
+            @RequestParam(value = "page", defaultValue = "1") int page
+    ) {
+        return commentService.getChildCommentsById(commentId, page);
     }
 
     @PatchMapping("/update/")

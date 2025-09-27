@@ -28,6 +28,11 @@ public class ChatRoomController {
         return chatRoomService.listRoomsWithLatestMessage();
     }
 
+    @GetMapping("/chatroom/get/")
+    public ChatRoomDto getChatRoomByUsername(@RequestParam("username") String username) {
+        return chatRoomService.getChatRoomByUsername(username);
+    }
+
     @PostMapping("/chatroom/create/")
     public ChatRoomDto createChatRoom (@RequestBody CreateChatRoomDto dto) {
         return chatRoomService.createChatRoom(dto);

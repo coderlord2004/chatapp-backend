@@ -16,21 +16,24 @@ public class PostSchedulerService {
     private final Scheduler scheduler;
 
     public void schedulePost(Long postId, LocalDateTime scheduledAt) throws SchedulerException {
-        JobDataMap dataMap = new JobDataMap();
-        dataMap.put("postId", postId);
+        if (scheduledAt.isBefore(LocalDateTime.now())) {
+            throw new IllegalArgumentException("Thời gian phải lớn hơn hiện tại");
+        }
 
         JobDetail jobDetail = JobBuilder.newJob(PublishPostJob.class)
                 .withIdentity("postJob-" + postId, "post-jobs")
-                .usingJobData(dataMap)
+                .usingJobData("postId", postId)
                 .build();
 
         Trigger trigger = TriggerBuilder.newTrigger()
-                .forJob(jobDetail)
                 .withIdentity("postTrigger-" + postId, "post-triggers")
                 .startAt(Date.from(scheduledAt.atZone(ZoneId.systemDefault()).toInstant()))
+                .withSchedule(SimpleScheduleBuilder.simpleSchedule())
                 .build();
 
         scheduler.scheduleJob(jobDetail, trigger);
+
+        System.out.println("✅ Scheduled postId " + postId + " at " + scheduledAt);
     }
 }
 

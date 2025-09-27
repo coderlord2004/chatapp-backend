@@ -7,6 +7,7 @@ import com.group4.chatapp.repositories.MessageRepository;
 import jakarta.transaction.Transactional;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
@@ -25,6 +26,9 @@ public class MessageService {
     private final MessageCheckService checkService;
     private final MessageRepository messageRepository;
 
+    @Value("${messages.max-request}")
+    private int messageRequestSize;
+
     @Transactional
     public List<MessageReceiveDto> getMessages(long roomId, int page) {
 
@@ -38,17 +42,11 @@ public class MessageService {
         checkService.receiveChatRoomAndCheck(roomId);
 
         var pageRequest = PageRequest.of(
-            page - 1, 50,
-            Sort.by(Sort.Direction.DESC, "sentOn")
+            page - 1, messageRequestSize,
+            Sort.by(Sort.Direction.ASC, "sentOn")
         );
 
-        var messages = messageRepository.findByRoomId(roomId, pageRequest)
-            .map(MessageReceiveDto::new)
-            .collect(Collectors.toList());
-
-        Collections.reverse(messages);
-
-        return messages;
+        return messageRepository.findByRoomId(roomId, pageRequest).stream().map(MessageReceiveDto::new).toList();
     }
 
     public MessageSendResponseDto sendMessage(long roomId, MessageSendDto dto) {

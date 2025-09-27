@@ -2,6 +2,7 @@ package com.group4.chatapp.repositories;
 
 import com.group4.chatapp.dtos.ChatRoomDto;
 import com.group4.chatapp.models.ChatRoom;
+import com.group4.chatapp.models.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -52,4 +53,15 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
         where a.id = ?1 and b.id = ?2 and c.type = ?3
     """)
     boolean usersShareRoomOfType(long id1, long id2, ChatRoom.Type type);
+
+    @Query("""
+            SELECT DISTINCT cr
+            FROM ChatRoom cr
+            JOIN cr.members m1
+            JOIN cr.members m2
+            WHERE cr.type = com.group4.chatapp.models.ChatRoom.Type.DUO
+                  AND m1.id = :authUserId
+                  AND m2.id = :otherUserId
+            """)
+    ChatRoom findDuoChatRoom(Long authUserId, Long otherUserId);
 }

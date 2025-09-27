@@ -32,7 +32,7 @@ public class ChatRoom {
     @ManyToMany
     private Set<User> members;
 
-    @OneToMany(mappedBy = "message")
+    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL)
     private List<ChatMessage> messages;
 
     @Column(nullable = false)

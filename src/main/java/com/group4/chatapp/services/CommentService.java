@@ -11,12 +11,15 @@ import com.group4.chatapp.repositories.CommentRepository;
 import com.group4.chatapp.repositories.ContentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -54,9 +57,34 @@ public class CommentService {
         ));
     }
 
-    public List<CommentResponseDto> getComments(Long targetId, TargetType targetType) {
-        List<Comment> comments = commentRepository.getComments(targetId, targetType);
-        return comments.stream().map(CommentResponseDto::new).toList();
+    public List<Map<String, Object>> getRootCommentsOfPost(Long targetId, TargetType targetType, int page) {
+        List<Object[]> results = commentRepository.findRootCommentsWithChildCount(targetId, targetType, PageRequest.of(page-1, 20));
+        List<Map<String, Object>> responses = new ArrayList<>();
+        for (Object[] result : results) {
+            Comment comment = (Comment) result[0];
+            Long totalChildComments = (Long) result[1];
+            CommentResponseDto commentResponseDto = new CommentResponseDto(comment);
+            responses.add(Map.of(
+                    "commentData", commentResponseDto,
+                    "totalChildComments", totalChildComments
+            ));
+        }
+        return responses;
+    }
+
+    public List<Map<String, Object>> getChildCommentsById(Long commentId, int page) {
+        List<Object[]> results = commentRepository.findChildCommentsById(commentId, PageRequest.of(page-1, 5));
+        List<Map<String, Object>> responses = new ArrayList<>();
+        for (Object[] result : results) {
+            Comment comment = (Comment) result[0];
+            Long totalChildComments = (Long) result[1];
+            CommentResponseDto commentResponseDto = new CommentResponseDto(comment);
+            responses.add(Map.of(
+                    "commentData", commentResponseDto,
+                    "totalChildComments", totalChildComments
+            ));
+        }
+        return responses;
     }
 
     public void updateComment(CommentDto dto) {

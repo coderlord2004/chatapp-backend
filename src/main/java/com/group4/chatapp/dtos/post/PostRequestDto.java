@@ -17,8 +17,7 @@ public class PostRequestDto {
     private String caption;
     private int captionBackground;
     private PostVisibilityType visibility;
-    @Builder.Default
-    private boolean isScheduled = false;
+    private Boolean isScheduled;
     private LocalDateTime scheduledAt;
     @Nullable
     private List<UploadFileDto> attachments;

@@ -14,7 +14,7 @@ public class QuartzConfig {
     @Bean
     public SchedulerFactoryBean schedulerFactoryBean(DataSource dataSource) {
         SchedulerFactoryBean factory = new SchedulerFactoryBean();
-        factory.setDataSource(dataSource); // dùng datasource Spring Boot
+        factory.setDataSource(dataSource);
         return factory;
     }
 
