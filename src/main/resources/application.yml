@@ -31,24 +31,6 @@ spring:
       max-file-size: "100MB"
       max-request-size: "150MB"
       file-size-threshold: "2KB"
-  quartz:
-    job-store-type: jdbc
-    jdbc:
-      initialize-schema: never
-    properties:
-      org:
-        quartz:
-          jobStore:
-            dataSource: quartzDataSource
-            tablePrefix: QRTZ_
-            isClustered: false
-          dataSource:
-            quartzDataSource:
-              driver: com.mysql.cj.jdbc.Driver
-              URL: "${DB_URL}"
-              user: "${DB_USERNAME}"
-              password: "${DB_PASSWORD}"
-              maxConnections: 10
 
 server:
   port: "${PORT:8000}"

@@ -1,6 +1,7 @@
 package com.group4.chatapp.models;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -8,6 +9,7 @@ import lombok.NoArgsConstructor;
 @Data
 @Inheritance(strategy = InheritanceType.JOINED)
 @NoArgsConstructor
+@AllArgsConstructor
 public class Content {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,9 +24,6 @@ public class Content {
     @Column(name = "total_shares")
     private Long totalShares = 0L;
 
-    public Content(Long totalReactions, Long totalComments, Long totalShares) {
-        this.totalReactions = totalReactions;
-        this.totalComments = totalComments;
-        this.totalShares = totalShares;
-    }
+    @Column(name = "total_views")
+    private Long totalViews = 0L;
 }

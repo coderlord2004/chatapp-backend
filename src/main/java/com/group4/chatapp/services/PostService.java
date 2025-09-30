@@ -99,28 +99,16 @@ public class PostService {
         for (Attachment attachment : attachments) {
             attachment.setPost(post);
         }
+        post.setAttachments(attachments);
 
-        try {
-            if (dto.getIsScheduled()) {
-                System.out.println("scheduled at: " + dto.getScheduledAt());
-                System.out.println("now: " + LocalDateTime.now());
-                post.setStatus(Post.PostStatus.SCHEDULED);
-                post.setScheduledAt(dto.getScheduledAt());
-                post.setAttachments(attachments);
-                post = postRepository.save(post);
-                schedulerService.schedulePost(post.getId(), dto.getScheduledAt());
-            } else {
-                post.setStatus(Post.PostStatus.PUBLISHED);
-                post.setPublishedAt(LocalDateTime.now());
-                post.setAttachments(attachments);
-                postRepository.save(post);
-            }
-        } catch (SchedulerException e) {
-            throw new ApiException(
-                    HttpStatus.BAD_REQUEST,
-                    e.getMessage()
-            );
+        if (dto.getIsScheduled()) {
+            post.setStatus(Post.PostStatus.SCHEDULED);
+            post.setScheduledAt(dto.getScheduledAt());
+        } else {
+            post.setStatus(Post.PostStatus.PUBLISHED);
+            post.setPublishedAt(LocalDateTime.now());
         }
+        postRepository.save(post);
     }
 
     @Transactional

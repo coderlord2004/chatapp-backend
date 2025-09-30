@@ -22,7 +22,6 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-websocket")
     implementation("org.springframework.boot:spring-boot-starter-quartz")
-
     implementation("com.cloudinary:cloudinary:1.0.14")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.6")
     implementation("io.agora:authentication:2.1.3")

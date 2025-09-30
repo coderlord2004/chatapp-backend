@@ -18,13 +18,13 @@ import java.util.List;
 public class CommentResponseDto {
     private Long id;
     private String content;
-    private UserWithAvatarDto users;
+    private UserWithAvatarDto user;
     private Timestamp commentedAt;
 
     public CommentResponseDto(Comment comment) {
         this.id = comment.getId();
         this.content = comment.getContent();
-        this.users = new UserWithAvatarDto(comment.getUser());
+        this.user = new UserWithAvatarDto(comment.getUser());
         this.commentedAt = comment.getCommentedAt();
     }
 }

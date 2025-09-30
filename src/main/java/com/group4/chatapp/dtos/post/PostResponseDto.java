@@ -29,6 +29,7 @@ public class PostResponseDto {
     private List<ReactionType> topReactionTypes;
     private Long totalComments;
     private Long totalShares;
+    private Long totalViews;
     private List<AttachmentDto> attachments;
     private PostResponseDto sharedPost;
     private PostAttachmentType postAttachmentType;
@@ -44,6 +45,7 @@ public class PostResponseDto {
         this.topReactionTypes = new ArrayList<>();
         this.totalComments = post.getTotalComments();
         this.totalShares = post.getTotalShares();
+        this.totalViews = post.getTotalViews();
         this.attachments = post.getAttachments().stream().map(AttachmentDto::new).toList();
         this.sharedPost = post.getSharedPost() != null ? new PostResponseDto(post.getSharedPost()) : null;
         this.postAttachmentType = post.getPostAttachmentType();
