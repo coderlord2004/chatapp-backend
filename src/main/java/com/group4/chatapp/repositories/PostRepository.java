@@ -53,7 +53,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
            SELECT p
            FROM Post p
            LEFT JOIN FETCH p.attachments
-           WHERE p.totalViews >= 10
+           WHERE p.totalViews >= 0
            ORDER BY p.totalViews DESC
            """)
     List<Post> getPostsByTopViews(Pageable pageable);

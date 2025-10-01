@@ -71,4 +71,6 @@ public interface InvitationRepository extends JpaRepository<Invitation, Long> {
             WHERE i.sender.id = ?1 AND (i.status = 'PENDING' OR i.status = 'ACCEPTED')
             """)
     Long countFollowingByUserId(Long userId);
+
+
 }

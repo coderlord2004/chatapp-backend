@@ -43,6 +43,19 @@ public interface UserRepository extends JpaRepository<User, Long> {
     List<Object[]> getListFriend (Long userId);
 
     @Query("""
+    SELECT u
+    FROM User u
+    WHERE u.id <> :userId
+      AND NOT EXISTS (
+          SELECT 1
+          FROM Invitation i
+          WHERE (i.sender = u AND i.receiver.id = :userId)
+              OR (i.receiver = u AND i.sender.id = :userId)
+      )
+    """)
+    List<User> getUserIsNotFriend(@Param("userId") Long userId, Pageable pageable);
+
+    @Query("""
             SELECT sender, receiver
             FROM Invitation i
             JOIN i.sender sender

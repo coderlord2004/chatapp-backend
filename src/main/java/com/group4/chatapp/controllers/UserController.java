@@ -78,5 +78,8 @@ public class UserController {
         return Map.of("cover_picture_url", userService.updateCoverPicture(coverPicture));
     }
 
-
+    @GetMapping("/friend-suggestions/")
+    public List<UserWithAvatarDto> getFriendSuggestions(@RequestParam(value = "page", defaultValue = "1") int page) {
+        return userService.suggestFriend(page);
+    }
 }

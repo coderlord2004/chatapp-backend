@@ -200,5 +200,9 @@ public class UserService {
         return coverPictureUrl;
     }
 
-
+    public List<UserWithAvatarDto> suggestFriend(int page) {
+        User authUser = getUserOrThrows();
+        List<User> suggestedFriends = repository.getUserIsNotFriend(authUser.getId(), PageRequest.of(page-1, 20));
+        return suggestedFriends.stream().map(UserWithAvatarDto::new).toList();
+    }
 }
