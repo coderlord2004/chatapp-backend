@@ -6,7 +6,6 @@ import com.group4.chatapp.dtos.post.SharePostDto;
 import com.group4.chatapp.dtos.user.UserWithAvatarDto;
 import com.group4.chatapp.exceptions.ApiException;
 import com.group4.chatapp.models.Attachment;
-import com.group4.chatapp.models.ChatRoom;
 import com.group4.chatapp.models.Enum.PostAttachmentType;
 import com.group4.chatapp.models.Enum.PostVisibilityType;
 import com.group4.chatapp.models.Post;
@@ -14,7 +13,6 @@ import com.group4.chatapp.models.User;
 import com.group4.chatapp.repositories.*;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.quartz.SchedulerException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -37,7 +35,6 @@ public class PostService {
     private InvitationRepository invitationRepository;
     private ReactionService reactionService;
     private CloudinaryService cloudinaryService;
-    private PostSchedulerService schedulerService;
 
     public Post getPost(Long postId) {
         return postRepository.findById(postId).orElseThrow(() -> new ApiException(
@@ -100,14 +97,9 @@ public class PostService {
             attachment.setPost(post);
         }
         post.setAttachments(attachments);
+        post.setStatus(Post.PostStatus.PUBLISHED);
+        post.setPublishedAt(LocalDateTime.now());
 
-        if (dto.getIsScheduled()) {
-            post.setStatus(Post.PostStatus.SCHEDULED);
-            post.setScheduledAt(dto.getScheduledAt());
-        } else {
-            post.setStatus(Post.PostStatus.PUBLISHED);
-            post.setPublishedAt(LocalDateTime.now());
-        }
         postRepository.save(post);
     }
 
@@ -147,7 +139,7 @@ public class PostService {
 
     @Transactional(readOnly = true)
     public List<PostResponseDto> getNewsFeed(int page) {
-        List<Post> topPostReactions = postRepository.getPostsByTopReactions(PageRequest.of(page - 1, 5));
+        List<Post> topPostReactions = postRepository.getPostsByTopViews(PageRequest.of(page - 1, 5));
         List<UserWithAvatarDto> friends = userService.getListFriend();
 
         List<Post> latestFriendPosts = new ArrayList<>();

@@ -12,6 +12,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,7 +25,7 @@ public class PostResponseDto {
     private String caption;
     private Integer captionBackground;
     private PostVisibilityType visibility;
-    private Timestamp createdOn;
+    private LocalDateTime publishedAt;
     private Long totalReactions;
     private List<ReactionType> topReactionTypes;
     private Long totalComments;
@@ -40,7 +41,7 @@ public class PostResponseDto {
         this.caption = post.getCaption();
         this.captionBackground = post.getCaptionBackground();
         this.visibility = post.getVisibility();
-        this.createdOn = post.getCreatedOn();
+        this.publishedAt = post.getPublishedAt();
         this.totalReactions = post.getTotalReactions();
         this.topReactionTypes = new ArrayList<>();
         this.totalComments = post.getTotalComments();

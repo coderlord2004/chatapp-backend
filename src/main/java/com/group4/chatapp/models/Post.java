@@ -24,10 +24,6 @@ public class Post extends Content {
     @Column(name = "caption_background")
     private Integer captionBackground;
 
-    @CreationTimestamp
-    @Column(name = "created_on")
-    private Timestamp createdOn;
-
     @Enumerated(EnumType.STRING)
     @Builder.Default
     private PostVisibilityType visibility = PostVisibilityType.PUBLIC;
@@ -40,9 +36,7 @@ public class Post extends Content {
     @Enumerated(value = EnumType.STRING)
     private PostStatus status;
 
-    @Column(name = "scheduled_at")
-    private LocalDateTime scheduledAt;
-
+    @Column(name = "published_at")
     private LocalDateTime publishedAt;
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
@@ -58,7 +52,6 @@ public class Post extends Content {
 
     public enum PostStatus {
         PUBLISHED,
-        SCHEDULED,
         DRAFT
     }
 }

@@ -18,7 +18,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             FROM Post p
             LEFT JOIN FETCH p.attachments
             WHERE p.user = ?1
-            ORDER BY p.createdOn DESC
+            ORDER BY p.publishedAt DESC
             """)
     List<Post> getPostsByAuthUser(User authUser, Pageable pageable);
 
@@ -26,8 +26,8 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             SELECT p
             FROM Post p
             LEFT JOIN FETCH p.attachments
-            WHERE p.user.username = ?1 AND p.visibility = 'PUBLIC' AND p.visibility = 'FRIEND'
-            ORDER BY p.createdOn DESC
+            WHERE p.user.username = ?1 AND p.visibility = 'PUBLIC' AND p.visibility = 'FRIEND' AND p.status = 'PUBLISHED'
+            ORDER BY p.publishedAt DESC
             """)
     List<Post> getPostsIfIsFriend(String username, Pageable pageable);
 
@@ -35,8 +35,8 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             SELECT p
             FROM Post p
             LEFT JOIN FETCH p.attachments
-            WHERE p.user.username = ?1 AND p.visibility = 'PUBLIC'
-            ORDER BY p.createdOn DESC
+            WHERE p.user.username = ?1 AND p.visibility = 'PUBLIC' AND p.status = 'PUBLISHED'
+            ORDER BY p.publishedAt DESC
             """)
     List<Post> getPostsIfIsNotFriend(String username, Pageable pageable);
 
@@ -45,7 +45,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             FROM Post p
             LEFT JOIN FETCH p.attachments
             WHERE p.user.id = ?1
-            ORDER BY p.createdOn DESC
+            ORDER BY p.publishedAt DESC
             """)
     List<Post> getNewPostByUserId(Long userId, Pageable pageable);
 
@@ -53,10 +53,10 @@ public interface PostRepository extends JpaRepository<Post, Long> {
            SELECT p
            FROM Post p
            LEFT JOIN FETCH p.attachments
-           WHERE p.totalReactions >= 10
-           ORDER BY p.totalReactions DESC
+           WHERE p.totalViews >= 10
+           ORDER BY p.totalViews DESC
            """)
-    List<Post> getPostsByTopReactions(Pageable pageable);
+    List<Post> getPostsByTopViews(Pageable pageable);
 
     @Query("""
             SELECT COUNT(p)
@@ -64,11 +64,4 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             WHERE p.user.id = ?1 AND (p.visibility = 'PUBLIC' OR p.visibility = 'FRIEND')
             """)
     Long countPostByUserId(Long userId);
-
-    @Query("""
-            SELECT p
-            FROM Post p
-            WHERE p.scheduledAt <= :now AND p.status = 'SCHEDULED'
-            """)
-    List<Post> findReadyToPublish(@Param("now") LocalDateTime now);
 }
