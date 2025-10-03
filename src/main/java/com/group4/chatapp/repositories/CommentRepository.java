@@ -35,9 +35,9 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     List<Object[]> findChildCommentsById(Long commentId, Pageable pageable);
 
     @Query("""
-            SELECT COUNT(c.user)
+            SELECT COUNT(c.id)
             FROM Comment c
-            WHERE c.user.id = ?1 AND c.parentComment IS NULL
+            WHERE c.user.id = ?1 AND c.targetId = ?2 AND c.targetType = ?3 AND c.parentComment IS NULL
             """)
-    Long countRootCommentByUserId(Long userId);
+    Long countRootCommentByUserId(Long userId, Long postId, TargetType targetType);
 }

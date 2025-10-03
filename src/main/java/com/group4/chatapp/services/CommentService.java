@@ -31,7 +31,7 @@ public class CommentService {
 
     public void createComment(CommentRequestDto dto) {
         User authUser = userService.getUserOrThrows();
-        Long totalCommentByUser = commentRepository.countRootCommentByUserId(authUser.getId());
+        Long totalCommentByUser = commentRepository.countRootCommentByUserId(authUser.getId(), dto.getTargetId(), dto.getTargetType());
         if (totalCommentByUser < 3) {
             Comment comment = Comment.builder()
                     .user(authUser)
