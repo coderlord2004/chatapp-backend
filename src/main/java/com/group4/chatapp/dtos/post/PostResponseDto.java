@@ -35,6 +35,7 @@ public class PostResponseDto {
     private PostResponseDto sharedPost;
     private PostAttachmentType postAttachmentType;
     private UserWithAvatarDto author;
+    private ReactionType reacted;
 
     public PostResponseDto(Post post) {
         this.id = post.getId();
@@ -53,8 +54,9 @@ public class PostResponseDto {
         this.author = new UserWithAvatarDto(post.getUser());
     }
 
-    public PostResponseDto(Post post, List<ReactionType> topReactionTypes) {
+    public PostResponseDto(Post post, List<ReactionType> topReactionTypes, ReactionType reacted) {
         this(post);
         this.topReactionTypes = topReactionTypes;
+        this.reacted = reacted;
     }
 }

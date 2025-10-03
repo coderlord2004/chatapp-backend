@@ -37,7 +37,7 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     @Query("""
             SELECT COUNT(c.user)
             FROM Comment c
-            WHERE c.user.id = ?1
+            WHERE c.user.id = ?1 AND c.parentComment IS NULL
             """)
-    Long countByUserId(Long userId);
+    Long countRootCommentByUserId(Long userId);
 }

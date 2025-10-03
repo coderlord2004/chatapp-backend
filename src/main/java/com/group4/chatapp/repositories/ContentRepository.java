@@ -37,4 +37,9 @@ public interface ContentRepository extends JpaRepository<Content, Long> {
     @Modifying
     @Query("UPDATE Content c SET c.totalShares = c.totalShares - 1 WHERE c.id = :id AND c.totalShares > 0")
     void decreaseShares(@Param("id") Long id);
+
+    @Transactional
+    @Modifying
+    @Query("UPDATE Content c SET c.totalViews = c.totalViews + 1 WHERE c.id = :id")
+    void increaseViews(@Param("id") Long id);
 }

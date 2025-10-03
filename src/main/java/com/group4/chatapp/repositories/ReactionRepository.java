@@ -36,5 +36,10 @@ public interface ReactionRepository extends JpaRepository<Reaction, Long> {
             """)
     List<ReactionType> getTopReactionType(Long targetId, TargetType targetType, Pageable pageable);
 
-
+    @Query("""
+            SELECT r.reactionType
+            FROM Reaction r
+            WHERE r.targetId = ?1 AND r.targetType = 'POST' AND r.user.id = ?2
+            """)
+    ReactionType getUserReaction(Long postId, Long userId);
 }

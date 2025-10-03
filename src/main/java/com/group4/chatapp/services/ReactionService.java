@@ -26,20 +26,24 @@ public class ReactionService {
         User authUser = userService.getUserOrThrows();
 
         Reaction reaction = reactionRepository.findByUserIdAndTargetId(authUser.getId(), reactionDto.getTargetId(), reactionDto.getTargetType());
+
+        if (reactionDto.getReactionType() == null) {
+            throw new IllegalArgumentException("ReactionType must not be null");
+        }
+
         if (reaction != null) {
-            String reactionType = String.valueOf(reaction.getReactionType());
-            if (reactionType.equalsIgnoreCase(reactionDto.getReactionType())) {
+            if (reaction.getReactionType() == reactionDto.getReactionType()) {
                 reactionRepository.delete(reaction);
                 contentRepository.decreaseReactions(reactionDto.getTargetId());
             } else {
-                reaction.setReactionType(ReactionType.valueOf(reactionDto.getReactionType()));
+                reaction.setReactionType(reactionDto.getReactionType());
                 reactionRepository.save(reaction);
             }
         } else {
             reaction = Reaction.builder()
                     .targetId(reactionDto.getTargetId())
                     .targetType(reactionDto.getTargetType())
-                    .reactionType(ReactionType.valueOf(reactionDto.getReactionType()))
+                    .reactionType(reactionDto.getReactionType())
                     .user(authUser)
                     .build();
             reactionRepository.save(reaction);
@@ -47,7 +51,11 @@ public class ReactionService {
         }
     }
 
-    public List<ReactionType> getTopReactionType(Post post) {
-        return reactionRepository.getTopReactionType(post.getId(), TargetType.POST, PageRequest.of(0, 3));
+    public List<ReactionType> getTopReactionType(Long postId) {
+        return reactionRepository.getTopReactionType(postId, TargetType.POST, PageRequest.of(0, 3));
+    }
+
+    public ReactionType getUserReaction(Long postId, Long userId) {
+        return reactionRepository.getUserReaction(postId, userId);
     }
 }

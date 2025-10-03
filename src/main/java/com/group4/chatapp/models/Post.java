@@ -36,6 +36,7 @@ public class Post extends Content {
     @Enumerated(value = EnumType.STRING)
     private PostStatus status;
 
+    @CreationTimestamp
     @Column(name = "published_at")
     private LocalDateTime publishedAt;
 

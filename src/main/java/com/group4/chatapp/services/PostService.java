@@ -8,7 +8,9 @@ import com.group4.chatapp.exceptions.ApiException;
 import com.group4.chatapp.models.Attachment;
 import com.group4.chatapp.models.Enum.PostAttachmentType;
 import com.group4.chatapp.models.Enum.PostVisibilityType;
+import com.group4.chatapp.models.Enum.ReactionType;
 import com.group4.chatapp.models.Post;
+import com.group4.chatapp.models.Reaction;
 import com.group4.chatapp.models.User;
 import com.group4.chatapp.repositories.*;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +37,7 @@ public class PostService {
     private InvitationRepository invitationRepository;
     private ReactionService reactionService;
     private CloudinaryService cloudinaryService;
+    private ContentRepository contentRepository;
 
     public Post getPost(Long postId) {
         return postRepository.findById(postId).orElseThrow(() -> new ApiException(
@@ -55,12 +58,12 @@ public class PostService {
 
     public List<PostResponseDto> getPostsByAuthUser(User authUser, int page) {
         List<Post> posts = postRepository.getPostsByAuthUser(authUser, PageRequest.of(page-1, 20));
-        List<PostResponseDto> postResponseDtos = new ArrayList<>();
-        for (Post post : posts) {
-            postResponseDtos.add(new PostResponseDto(post, reactionService.getTopReactionType(post)));
-        }
 
-        return postResponseDtos;
+        return posts.stream().map(post -> {
+            List<ReactionType> topReactionTypes = reactionService.getTopReactionType(post.getId());
+            ReactionType reactionType = reactionService.getUserReaction(post.getId(), post.getUser().getId());
+            return new PostResponseDto(post, topReactionTypes, reactionType);
+        }).toList();
     }
 
     public List<PostResponseDto> getPostsByUsername(String username, int page) {
@@ -70,12 +73,15 @@ public class PostService {
         List<Post> posts;
         if (isFriend) {
             posts = postRepository.getPostsIfIsFriend(username, pageRequest);
-
         } else {
             posts = postRepository.getPostsIfIsNotFriend(username, pageRequest);
         }
 
-        return posts.stream().map(post -> new PostResponseDto(post, reactionService.getTopReactionType(post))).toList();
+        return posts.stream().map(post -> {
+            List<ReactionType> topReactionTypes = reactionService.getTopReactionType(post.getId());
+            ReactionType reactionType = reactionService.getUserReaction(post.getId(), post.getUser().getId());
+            return new PostResponseDto(post, topReactionTypes, reactionType);
+        }).toList();
     }
 
     public void createPost(PostRequestDto dto)  {
@@ -121,6 +127,9 @@ public class PostService {
             });
             cloudinaryService.deleteMultiFile(publicIds);
         }
+        if (post.getPostAttachmentType().equals(PostAttachmentType.POST)) {
+            contentRepository.decreaseShares(post.getSharedPost().getId());
+        }
         postRepository.deleteById(postId);
     }
 
@@ -134,35 +143,33 @@ public class PostService {
                 .postAttachmentType(PostAttachmentType.POST)
                 .user(authUser)
                 .build();
+        contentRepository.increaseShares(dto.getSharedPostId());
         postRepository.save(newPost);
     }
 
     @Transactional(readOnly = true)
     public List<PostResponseDto> getNewsFeed(int page) {
-        List<Post> topPostReactions = postRepository.getPostsByTopViews(PageRequest.of(page - 1, 5));
         List<UserWithAvatarDto> friends = userService.getListFriend();
-
-        List<Post> latestFriendPosts = new ArrayList<>();
-        friends.forEach(friend -> {
-            if (friend != null) {
-                List<Post> posts = postRepository.getNewPostByUserId(friend.getId(), PageRequest.of(page - 1, 1));
-                if (posts != null && !posts.isEmpty() && posts.getFirst() != null) {
-                    latestFriendPosts.add(posts.getFirst());
-                }
+        Post latestFriendPosts = null;
+        for (UserWithAvatarDto friend : friends) {
+            List<Post> posts = postRepository.getNewPostByUserId(friend.getId(), PageRequest.of(page - 1, 1));
+            if (posts != null && !posts.isEmpty() && posts.getFirst() != null) {
+                latestFriendPosts = posts.getFirst();
             }
-        });
+        }
+        List<Post> topPostViews = postRepository.getPostsByTopViews(PageRequest.of(page - 1, 5));
 
-        List<Post> mergedPosts = Stream.concat(
-                topPostReactions.stream().filter(Objects::nonNull),
-                latestFriendPosts.stream().filter(Objects::nonNull)
-        ).toList();
+        if (latestFriendPosts != null) {
+            topPostViews.add(latestFriendPosts);
+        }
 
-        List<Post> shuffled = new ArrayList<>(mergedPosts);
+        List<Post> shuffled = new ArrayList<>(topPostViews);
         Collections.shuffle(shuffled);
 
-        return shuffled.stream()
-                .filter(Objects::nonNull)
-                .map(post -> new PostResponseDto(post, reactionService.getTopReactionType(post)))
-                .toList();
+        return shuffled.stream().map(post -> {
+            List<ReactionType> topReactionTypes = reactionService.getTopReactionType(post.getId());
+            ReactionType reactionType = reactionService.getUserReaction(post.getId(), post.getUser().getId());
+            return new PostResponseDto(post, topReactionTypes, reactionType);
+        }).toList();
     }
 }

@@ -42,8 +42,9 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-
+        System.out.println("HttpSecurity.cors has been injected.");
         return http
+            .cors(Customizer.withDefaults())
             .csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(req -> req
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
@@ -57,22 +58,20 @@ public class SecurityConfig {
 
     @Bean
     public CorsFilter corsFilter() {
+        System.out.println("CorsFilter has been injected.");
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
         config.setAllowedOrigins(List.of(
                 "http://localhost:3000",
                 "https://nextchat-org.onrender.com"
         ));
-        config.setAllowedHeaders(List.of("Authorization", "Content-Type", "*"));
+        config.addAllowedHeader("*");
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
-
         return new CorsFilter(source);
     }
-
-
 
     @Bean
     public PasswordEncoder passwordEncoder() {
