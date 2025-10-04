@@ -37,4 +37,9 @@ public class ChatRoomController {
     public ChatRoomDto createChatRoom (@RequestBody CreateChatRoomDto dto) {
         return chatRoomService.createChatRoom(dto);
     }
+
+    @PostMapping("/chatroom/update-permission/")
+    public void updateSendPermission(@RequestParam("roomId") Long roomId) {
+        chatRoomService.updatePermission(roomId);
+    }
 }

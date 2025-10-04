@@ -3,6 +3,7 @@ package com.group4.chatapp.models;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.springframework.boot.context.properties.bind.DefaultValue;
 import org.springframework.lang.Nullable;
 
 import java.sql.Timestamp;
@@ -28,6 +29,13 @@ public class ChatRoom {
     @Nullable
     @ManyToOne
     private Attachment avatar;
+
+    @ManyToOne
+    private User leader;
+
+    @Column(name = "leader_only_send")
+    @Builder.Default
+    private Boolean leaderOnlySend = false;
 
     @ManyToMany
     private Set<User> members;

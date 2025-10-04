@@ -26,6 +26,8 @@ public class ChatRoomDto {
     private String name;
 
     private AttachmentDto avatar;
+    private UserWithAvatarDto leader;
+    private Boolean leaderOnlySend;
     private List<UserWithAvatarDto> members;
 
     private ChatRoom.Type type;
@@ -40,6 +42,8 @@ public class ChatRoomDto {
             room.getId(),
             room.getName(),
             null,
+            null,
+            room.getLeaderOnlySend(),
             room.getMembers().stream().map(UserWithAvatarDto::new).toList(),
             room.getType(),
             room.getCreatedOn(),
@@ -51,9 +55,11 @@ public class ChatRoomDto {
         if (avatar != null) {
             this.avatar = new AttachmentDto(avatar);
         }
-
         if (latestMessage != null) {
             this.latestMessage = new MessageReceiveDto(latestMessage);
+        }
+        if (room.getLeader() != null) {
+            this.leader = new UserWithAvatarDto(room.getLeader());
         }
     }
 
@@ -62,6 +68,8 @@ public class ChatRoomDto {
                 room.getId(),
                 room.getName(),
                 null,
+                null,
+                room.getLeaderOnlySend(),
                 room.getMembers().stream().map(UserWithAvatarDto::new).toList(),
                 room.getType(),
                 room.getCreatedOn(),
@@ -72,6 +80,9 @@ public class ChatRoomDto {
         var avatar = room.getAvatar();
         if (avatar != null) {
             this.avatar = new AttachmentDto(avatar);
+        }
+        if (room.getLeader() != null) {
+            this.leader = new UserWithAvatarDto(room.getLeader());
         }
     }
 }

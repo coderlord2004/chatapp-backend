@@ -2,6 +2,7 @@ package com.group4.chatapp.services;
 
 import com.group4.chatapp.dtos.ChatRoomDto;
 import com.group4.chatapp.dtos.CreateChatRoomDto;
+import com.group4.chatapp.exceptions.ApiException;
 import com.group4.chatapp.models.ChatMessage;
 import com.group4.chatapp.models.ChatRoom;
 import com.group4.chatapp.models.User;
@@ -12,14 +13,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Stream;
 
 @Service
@@ -33,6 +32,13 @@ public class ChatRoomService {
 
     @Value("${messages.max-request}")
     private int messageRequestSize;
+
+    public ChatRoom getChatRoom(Long roomId) {
+        return chatRoomRepository.findById(roomId).orElseThrow(() -> new ApiException(
+                HttpStatus.BAD_REQUEST,
+                "Chat room is not found!"
+        ));
+    }
 
     public ChatRoomDto getRoomWithLatestMessage(ChatRoom chatRoom) {
 
@@ -77,6 +83,7 @@ public class ChatRoomService {
                 .name(dto.getChatRoomName())
                 .type(ChatRoom.Type.GROUP)
                 .members(members)
+                .leader(authUser)
                 .build();
         chatRoom = chatRoomRepository.save(chatRoom);
 
@@ -92,5 +99,19 @@ public class ChatRoomService {
         }
 
         return new ChatRoomDto(chatRoom, (ChatMessage) null);
+    }
+
+    public void updatePermission(Long roomId) {
+        User authUser = userService.getUserOrThrows();
+        ChatRoom chatRoom = getChatRoom(roomId);
+        if (!Objects.equals(chatRoom.getLeader().getId(), authUser.getId())) {
+            throw new ApiException(
+                    HttpStatus.BAD_REQUEST,
+                    "Only leader can do this!"
+            );
+        }
+
+        chatRoom.setLeaderOnlySend(!chatRoom.getLeaderOnlySend());
+        chatRoomRepository.save(chatRoom);
     }
 }
