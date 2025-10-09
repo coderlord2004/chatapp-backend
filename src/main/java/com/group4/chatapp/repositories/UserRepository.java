@@ -1,6 +1,7 @@
 package com.group4.chatapp.repositories;
 
 import com.group4.chatapp.dtos.user.UserWithAvatarDto;
+import com.group4.chatapp.dtos.user.UserWithRelationDto;
 import com.group4.chatapp.models.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -19,23 +20,24 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("""
       SELECT u, i
       FROM User u
-      LEFT JOIN Invitation i
+      LEFT JOIN UserRelation i
          ON ((i.sender = :authUser AND i.receiver = u)
           OR (i.receiver = :authUser AND i.sender = u))
       WHERE u.id <> :#{#authUser.id}
         AND LOWER(u.username) LIKE LOWER(CONCAT('%', :keyword, '%'))
     """)
-    Page<Object[]> searchUsersWithInvitations(
+    Page<Object[]> searchUsersWithUserRelations(
             @Param("authUser") User authUser,
             @Param("keyword") String keyword,
             Pageable pageable);
+
 
     Optional<User> findByUsername(String username);
     boolean existsByUsername(String username);
 
     @Query("""
         SELECT sender, receiver
-        FROM Invitation i
+        FROM UserRelation i
         JOIN i.sender sender
         JOIN i.receiver receiver
         WHERE i.status = 'ACCEPTED' AND (sender.id = ?1 OR receiver.id = ?1)
@@ -48,7 +50,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     WHERE u.id <> :userId
       AND NOT EXISTS (
           SELECT 1
-          FROM Invitation i
+          FROM UserRelation i
           WHERE (i.sender = u AND i.receiver.id = :userId)
               OR (i.receiver = u AND i.sender.id = :userId)
       )
@@ -57,7 +59,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Query("""
             SELECT sender, receiver
-            FROM Invitation i
+            FROM UserRelation i
             JOIN i.sender sender
             JOIN i.receiver receiver
             WHERE i.status = 'ACCEPTED' AND (sender.id = ?1 OR receiver.id = ?1) AND sender.isOnline = true AND receiver.isOnline = true

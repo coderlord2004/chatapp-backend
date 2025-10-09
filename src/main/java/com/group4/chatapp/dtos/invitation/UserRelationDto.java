@@ -1,12 +1,11 @@
 package com.group4.chatapp.dtos.invitation;
 
 
-import com.group4.chatapp.dtos.ChatRoomDto;
 import com.group4.chatapp.dtos.user.UserWithAvatarDto;
 import com.group4.chatapp.models.UserRelation;
 import org.springframework.lang.Nullable;
 
-public record InvitationWithNewRoomDto(
+public record UserRelationDto(
 
     long id,
 
@@ -17,15 +16,10 @@ public record InvitationWithNewRoomDto(
     Long chatRoomId,
 
     UserRelation.Status status,
-
-    @Nullable
-    ChatRoomDto chatRoomDto
+    Boolean isBlocking
 ) {
 
-    public InvitationWithNewRoomDto(
-        UserRelation userRelation,
-        @Nullable ChatRoomDto chatRoomDto
-    ) {
+    public UserRelationDto(UserRelation userRelation) {
 
         this(
             userRelation.getId(),
@@ -37,7 +31,7 @@ public record InvitationWithNewRoomDto(
                 : userRelation.getChatRoom().getId(),
 
             userRelation.getStatus(),
-            chatRoomDto
+            userRelation.getIsBlocking()
         );
     }
 }

@@ -6,7 +6,7 @@ import com.group4.chatapp.dtos.token.TokenRefreshRequestDto;
 import com.group4.chatapp.dtos.user.UserDto;
 import com.group4.chatapp.dtos.user.UserInformationDto;
 import com.group4.chatapp.dtos.user.UserWithAvatarDto;
-import com.group4.chatapp.dtos.user.UserWithInvitationDto;
+import com.group4.chatapp.dtos.user.UserWithRelationDto;
 import com.group4.chatapp.services.JwtsService;
 import com.group4.chatapp.services.UserService;
 import jakarta.validation.Valid;
@@ -51,7 +51,7 @@ public class UserController {
     }
     
     @GetMapping("/info/")
-    public UserInformationDto getUser(@RequestParam("username") String username) {
+    public UserWithRelationDto getUser(@RequestParam("username") String username) {
         return userService.getUser(username);
     }
 
@@ -61,7 +61,7 @@ public class UserController {
     }
 
     @GetMapping("/search/")
-    public List<UserWithInvitationDto> searchUser(
+    public List<UserWithRelationDto> searchUser(
         @RequestParam(name = "q") String keyword,
         @RequestParam(name = "page", defaultValue = "1") int page
     ) {
@@ -81,5 +81,15 @@ public class UserController {
     @GetMapping("/friend-suggestions/")
     public List<UserWithAvatarDto> getFriendSuggestions(@RequestParam(value = "page", defaultValue = "1") int page) {
         return userService.suggestFriend(page);
+    }
+
+    @PostMapping("/block/")
+    public void blockUser(@RequestParam("userId") Long userId) {
+        userService.blockUser(userId);
+    }
+
+    @PostMapping("/un-block/")
+    public void ubBlockUser(@RequestParam("userId") Long userId) {
+        userService.unBlockUser(userId);
     }
 }

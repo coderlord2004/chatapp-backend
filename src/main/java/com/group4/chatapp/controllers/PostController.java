@@ -24,7 +24,7 @@ public class PostController {
             @PathVariable String username,
             @RequestParam(value = "page", defaultValue = "1") int page
     ){
-        return postService.getPostsByUser(username, page);
+        return postService.getPosts(username, page);
     }
 
     @PostMapping(value = "/create/", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

@@ -10,7 +10,7 @@ import org.springframework.lang.Nullable;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Invitation {
+public class UserRelation {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,6 +30,10 @@ public class Invitation {
     @Enumerated(EnumType.STRING)
     private Status status;
 
+    @Column(name = "is_blocking")
+    @Builder.Default
+    private Boolean isBlocking = false;
+
     public boolean isFriendRequest() {
         return chatRoom == null;
     }
@@ -43,6 +47,6 @@ public class Invitation {
     }
 
     public enum Status {
-        PENDING, ACCEPTED, REJECTED
+        PENDING, ACCEPTED, REJECTED, BLOCKED
     }
 }

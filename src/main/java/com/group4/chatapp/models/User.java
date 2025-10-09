@@ -57,6 +57,9 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Reaction> reactions;
 
+    @OneToMany(mappedBy = "leader", cascade = CascadeType.ALL)
+    private List<ChatRoom> chatRooms;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of();

@@ -1,10 +1,10 @@
 package com.group4.chatapp.controllers;
 
-import com.group4.chatapp.dtos.invitation.InvitationDto;
+import com.group4.chatapp.dtos.invitation.UserRelationDto;
 import com.group4.chatapp.dtos.invitation.InvitationReplyDto;
 import com.group4.chatapp.dtos.invitation.InvitationSendDto;
 import com.group4.chatapp.dtos.invitation.ReplyResponse;
-import com.group4.chatapp.services.invitations.InvitationService;
+import com.group4.chatapp.services.invitations.UserRelationService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import jakarta.validation.Valid;
@@ -21,19 +21,19 @@ import java.util.List;
 })
 @RequestMapping("/api/v1/invitations/")
 @RequiredArgsConstructor
-public class InvitationController {
+public class UserRelationController {
 
-    private final InvitationService invitationService;
+    private final UserRelationService userRelationService;
 
     @GetMapping
-    public List<InvitationDto> listInvitations() {
-        return invitationService.getInvitations();
+    public List<UserRelationDto> listInvitations() {
+        return userRelationService.getInvitations();
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public void sendInvitation(@Valid @RequestBody InvitationSendDto dto) {
-        invitationService.sendInvitation(dto);
+        userRelationService.sendInvitation(dto);
     }
 
     @PatchMapping("/{invitationId}")
@@ -42,6 +42,6 @@ public class InvitationController {
         @PathVariable long invitationId,
         @Valid @RequestBody InvitationReplyDto dto
     ) {
-        return invitationService.replyInvitation(invitationId, dto.accept());
+        return userRelationService.replyInvitation(invitationId, dto.accept());
     }
 }

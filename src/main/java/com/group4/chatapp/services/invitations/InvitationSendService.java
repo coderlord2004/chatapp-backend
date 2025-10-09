@@ -1,13 +1,13 @@
 package com.group4.chatapp.services.invitations;
 
-import com.group4.chatapp.dtos.invitation.InvitationDto;
+import com.group4.chatapp.dtos.invitation.UserRelationDto;
 import com.group4.chatapp.dtos.invitation.InvitationSendDto;
 import com.group4.chatapp.exceptions.ApiException;
 import com.group4.chatapp.models.ChatRoom;
-import com.group4.chatapp.models.Invitation;
+import com.group4.chatapp.models.UserRelation;
 import com.group4.chatapp.models.User;
 import com.group4.chatapp.repositories.ChatRoomRepository;
-import com.group4.chatapp.repositories.InvitationRepository;
+import com.group4.chatapp.repositories.UserRelationRepository;
 import com.group4.chatapp.repositories.UserRepository;
 import com.group4.chatapp.services.UserService;
 import lombok.RequiredArgsConstructor;
@@ -16,23 +16,25 @@ import org.springframework.lang.Nullable;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.Objects;
+
 @Service
 @RequiredArgsConstructor
 class InvitationSendService {
 
     private final UserService userService;
 
-    private final UserRepository userRepository;
-    private final InvitationRepository repository;
+    private final UserRelationRepository repository;
     private final ChatRoomRepository chatRoomRepository;
+    private final UserRelationCheckService userRelationCheckService;
 
     private final SimpMessagingTemplate messagingTemplate;
 
-    private void notifyInvitation(Invitation invitation) {
+    private void notifyInvitation(UserRelation userRelation) {
         messagingTemplate.convertAndSendToUser(
-            invitation.getReceiver().getUsername(),
+            userRelation.getReceiver().getUsername(),
             "/queue/invitations/",
-            new InvitationDto(invitation)
+            new UserRelationDto(userRelation)
         );
     }
 
@@ -46,12 +48,10 @@ class InvitationSendService {
                 "You cannot invite yourself!"
             );
         }
+        User receiver = userService.getUserByUsername(receiverUsername);
+        userRelationCheckService.checkSenderPermission(sender, receiver);
 
-        return userRepository.findByUsername(receiverUsername)
-            .orElseThrow(() -> new ApiException(
-                HttpStatus.NOT_FOUND,
-                "Receiver with provided username not found!"
-            ));
+        return receiver;
     }
 
     private void validateFriendRequest(User sender, User receiver) {
@@ -72,7 +72,7 @@ class InvitationSendService {
         var isReceiverSent = repository.existsFriendRequestWith(
             receiver.getId(),
             sender.getId(),
-            Invitation.Status.PENDING
+            UserRelation.Status.PENDING
         );
 
         if (isReceiverSent) {
@@ -115,14 +115,14 @@ class InvitationSendService {
             return repository.existsFriendRequestWith(
                 sender.getId(),
                 receiver.getId(),
-                Invitation.Status.PENDING
+                UserRelation.Status.PENDING
             );
         } else {
-            return repository.existGroupInvitationWith(
+            return repository.existGroupUserRelationWith(
                 sender.getId(),
                 receiver.getId(),
                 chatRoom.getId(),
-                Invitation.Status.PENDING
+                UserRelation.Status.PENDING
             );
         }
     }
@@ -166,8 +166,8 @@ class InvitationSendService {
 
         validateChatRoomAndUsers(sender, receiver, chatRoom);
 
-        var invitation = Invitation.builder()
-            .status(Invitation.Status.PENDING)
+        var invitation = UserRelation.builder()
+            .status(UserRelation.Status.PENDING)
             .sender(sender)
             .receiver(receiver)
             .chatRoom(chatRoom)

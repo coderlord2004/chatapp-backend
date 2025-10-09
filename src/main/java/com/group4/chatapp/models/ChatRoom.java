@@ -31,6 +31,7 @@ public class ChatRoom {
     private Attachment avatar;
 
     @ManyToOne
+    @JoinColumn(name = "leader_id")
     private User leader;
 
     @Column(name = "leader_only_send")
@@ -76,6 +77,10 @@ public class ChatRoom {
 
     public String getSocketPath() {
         return String.format("/queue/chat/%d", id);
+    }
+
+    public boolean isChatDuo() {
+        return type == Type.DUO;
     }
 
     public boolean isChatGroup() {

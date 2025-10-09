@@ -46,7 +46,7 @@ jwts:
   public-key: "classpath:certs/jwts/public.pem"
   private-key: "classpath:certs/jwts/private.pem"
 
-  access-token-lifetime: "PT30M" # 30 minutes
+  access-token-lifetime: "PT60M" # 30 minutes
   refresh-token-lifetime: "P30D" # 30 days
 
   secret-key: "${JWT_SECRET}"

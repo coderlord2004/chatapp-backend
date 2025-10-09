@@ -3,9 +3,9 @@ package com.group4.chatapp.services;
 import com.group4.chatapp.dtos.user.UserDto;
 import com.group4.chatapp.dtos.user.UserInformationDto;
 import com.group4.chatapp.dtos.user.UserWithAvatarDto;
-import com.group4.chatapp.dtos.user.UserWithInvitationDto;
+import com.group4.chatapp.dtos.user.UserWithRelationDto;
 import com.group4.chatapp.exceptions.ApiException;
-import com.group4.chatapp.models.Invitation;
+import com.group4.chatapp.models.UserRelation;
 import com.group4.chatapp.models.User;
 import com.group4.chatapp.repositories.*;
 import lombok.RequiredArgsConstructor;
@@ -34,8 +34,9 @@ public class UserService {
     private UserRepository repository;
     private PasswordEncoder passwordEncoder;
     private FileTypeService fileTypeService;
-    private InvitationRepository invitationRepository;
+    private UserRelationRepository userRelationRepository;
     private PostRepository postRepository;
+    private ChatRoomRepository chatRoomRepository;
 
     public void createUser(UserDto dto) {
 
@@ -58,22 +59,29 @@ public class UserService {
 
     public UserInformationDto getAuthUser() {
         User user = getUserOrThrows();
-        Long totalFollowers = invitationRepository.countFollowersByUserId(user.getId());
-        Long totalFollowing = invitationRepository.countFollowingByUserId(user.getId());
+        Long totalFollowers = userRelationRepository.countFollowersByUserId(user.getId());
+        Long totalFollowing = userRelationRepository.countFollowingByUserId(user.getId());
         Long totalPosts = postRepository.countPostByUserId(user.getId());
         return new UserInformationDto(user, totalFollowers, totalFollowing, totalPosts);
     }
 
-    public UserInformationDto getUser(String username) {
-        User user = repository.findByUsername(username).orElseThrow(() -> new ApiException(
-                HttpStatus.BAD_REQUEST,
-                "User is not found!"
-        ));
+    public Long[] getUserStatistics(Long userId) {
+        Long totalFollowers = userRelationRepository.countFollowersByUserId(userId);
+        Long totalFollowing = userRelationRepository.countFollowingByUserId(userId);
+        Long totalPosts = postRepository.countPostByUserId(userId);
+        return new Long[]{totalFollowers, totalFollowing, totalPosts};
+    }
 
-        Long totalFollowers = invitationRepository.countFollowersByUserId(user.getId());
-        Long totalFollowing = invitationRepository.countFollowingByUserId(user.getId());
-        Long totalPosts = postRepository.countPostByUserId(user.getId());
-        return new UserInformationDto(user, totalFollowers, totalFollowing, totalPosts);
+    public UserWithRelationDto getUser(String username) {
+        User authUser = getUserOrThrows();
+
+        if (authUser.getUsername().equals(username)) return null;
+
+        User user = getUserByUsername(username);
+        UserRelation userRelation = userRelationRepository.getUserRelation(authUser.getId(), user.getId());
+
+        Long[] userStatistics = getUserStatistics(user.getId());
+        return new UserWithRelationDto(user, userStatistics[0], userStatistics[1], userStatistics[2], userRelation);
     }
 
     public User getUserById(Long userId) {
@@ -145,7 +153,7 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public List<UserWithInvitationDto> searchUser(String keyword, int page) {
+    public List<UserWithRelationDto> searchUser(String keyword, int page) {
 
         var MAX_LIMIT = 20;
 
@@ -159,13 +167,14 @@ public class UserService {
         var pageable = PageRequest.of(page - 1, 20);
         User authUser = getUserOrThrows();
 
-        Page<Object[]> results = repository.searchUsersWithInvitations(authUser, keyword, pageable);
-        List<UserWithInvitationDto> responses = new ArrayList<>();
+        Page<Object[]> results = repository.searchUsersWithUserRelations(authUser, keyword, pageable);
+        List<UserWithRelationDto> responses = new ArrayList<>();
         for (Object[] result : results) {
             User user = (User) result[0];
-            Invitation invitation = (Invitation) result[1];
-            UserWithInvitationDto userWithInvitationDto = new UserWithInvitationDto(user, invitation);
-            responses.add(userWithInvitationDto);
+            Long[] userStatistics = getUserStatistics(user.getId());
+            UserRelation userRelation = (UserRelation) result[1];
+            UserWithRelationDto userWithRelationDto = new UserWithRelationDto(user, userStatistics[0], userStatistics[1], userStatistics[2], userRelation);
+            responses.add(userWithRelationDto);
         }
         return responses;
     }
@@ -204,5 +213,38 @@ public class UserService {
         User authUser = getUserOrThrows();
         List<User> suggestedFriends = repository.getUserIsNotFriend(authUser.getId(), PageRequest.of(page-1, 20));
         return suggestedFriends.stream().map(UserWithAvatarDto::new).toList();
+    }
+
+    public void blockUser(Long userId) {
+        User authUser = getUserOrThrows();
+        User otherUser = getUserById(userId);
+        UserRelation userRelation = userRelationRepository.getUserRelation(authUser.getId(), otherUser.getId());
+        if (userRelation == null) {
+            UserRelation newUserRelation = UserRelation.builder()
+                    .sender(authUser)
+                    .receiver(otherUser)
+                    .isBlocking(true)
+                    .status(UserRelation.Status.BLOCKED)
+                    .build();
+            userRelationRepository.save(newUserRelation);
+        } else {
+            userRelation.setIsBlocking(true);
+            userRelationRepository.save(userRelation);
+        }
+    }
+
+    public void unBlockUser(Long userId) {
+        User authUser = getUserOrThrows();
+        User otherUser = getUserById(userId);
+        UserRelation userRelation = userRelationRepository.getUserRelation(authUser.getId(), otherUser.getId());
+
+        if (userRelation == null) {
+            throw new ApiException(
+                    HttpStatus.BAD_REQUEST,
+                    "You haven't blocked this user before!"
+            );
+        } else {
+            userRelationRepository.delete(userRelation);
+        }
     }
 }

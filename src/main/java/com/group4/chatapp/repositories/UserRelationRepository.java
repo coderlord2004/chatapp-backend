@@ -1,7 +1,6 @@
 package com.group4.chatapp.repositories;
 
-import com.group4.chatapp.models.ChatRoom;
-import com.group4.chatapp.models.Invitation;
+import com.group4.chatapp.models.UserRelation;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -9,17 +8,17 @@ import org.springframework.stereotype.Repository;
 import java.util.stream.Stream;
 
 @Repository
-public interface InvitationRepository extends JpaRepository<Invitation, Long> {
+public interface UserRelationRepository extends JpaRepository<UserRelation, Long> {
 
     @Query("""
         select i
-        from Invitation i
+        from UserRelation i
         where i.receiver.id = ?1
     """)
-    Stream<Invitation> findByReceiverId(long id);
+    Stream<UserRelation> findByReceiverId(long id);
 
     @Query("""
-        select (count(i) > 0) from Invitation i
+        select (count(i) > 0) from UserRelation i
         where i.sender.id = ?1
           and i.receiver.id = ?2
           and i.chatRoom is null
@@ -28,26 +27,26 @@ public interface InvitationRepository extends JpaRepository<Invitation, Long> {
     boolean existsFriendRequestWith(
         long senderId,
         long receiverId,
-        Invitation.Status status
+        UserRelation.Status status
     );
 
     @Query("""
         select (count(i) > 0)
-        from Invitation i
+        from UserRelation i
         where i.sender.id = ?1
           and i.receiver.id = ?2
           and i.chatRoom.id = ?3
           and i.status = ?4
     """)
-    boolean existGroupInvitationWith(
+    boolean existGroupUserRelationWith(
         long senderId,
         long receiverId,
         long chatRoomId,
-        Invitation.Status status
+        UserRelation.Status status
     );
 
     @Query("""
-        select (count(i) > 0) from Invitation i
+        select (count(i) > 0) from UserRelation i
         where ((i.sender.username = ?1 and i.receiver.username = ?2)
           or (i.sender.username = ?2 and i.receiver.username = ?1))
           and i.chatRoom is null
@@ -59,18 +58,25 @@ public interface InvitationRepository extends JpaRepository<Invitation, Long> {
     );
 
     @Query("""
+            SELECT ur
+            FROM UserRelation ur
+            WHERE (ur.sender.id = ?1 AND ur.receiver.id = ?2
+                OR ur.sender.id = ?2 AND ur.receiver.id = ?1)
+                AND ur.chatRoom IS NULL
+            """)
+    UserRelation getUserRelation(Long authUserId, Long otherUserId);
+
+    @Query("""
             SELECT COUNT(i)
-            FROM Invitation i
+            FROM UserRelation i
             WHERE i.receiver.id = ?1 AND (i.status = 'PENDING' OR i.status = 'ACCEPTED')
             """)
     Long countFollowersByUserId(Long userId);
 
     @Query("""
             SELECT COUNT(i)
-            FROM Invitation i
+            FROM UserRelation i
             WHERE i.sender.id = ?1 AND (i.status = 'PENDING' OR i.status = 'ACCEPTED')
             """)
     Long countFollowingByUserId(Long userId);
-
-
 }

@@ -1,13 +1,12 @@
 package com.group4.chatapp.services.invitations;
 
-import com.group4.chatapp.dtos.invitation.InvitationDto;
+import com.group4.chatapp.dtos.invitation.UserRelationDto;
 import com.group4.chatapp.dtos.invitation.InvitationSendDto;
 import com.group4.chatapp.dtos.invitation.ReplyResponse;
 import com.group4.chatapp.exceptions.ApiException;
-import com.group4.chatapp.models.Invitation;
 import com.group4.chatapp.models.User;
-import com.group4.chatapp.repositories.InvitationRepository;
-import com.group4.chatapp.repositories.UserRepository;
+import com.group4.chatapp.models.UserRelation;
+import com.group4.chatapp.repositories.UserRelationRepository;
 import com.group4.chatapp.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -15,24 +14,25 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
-public class InvitationService {
+public class UserRelationService {
 
-    private final InvitationRepository repository;
+    private final UserRelationRepository repository;
 
     private final UserService userService;
     private final InvitationSendService sendService;
     private final InvitationReplyService replyService;
 
     @Transactional(readOnly = true)
-    public List<InvitationDto> getInvitations() {
+    public List<UserRelationDto> getInvitations() {
 
         var user = userService.getUserOrThrows();
 
         return repository.findByReceiverId(user.getId())
-            .map(InvitationDto::new)
+            .map(UserRelationDto::new)
             .toList();
     }
 
