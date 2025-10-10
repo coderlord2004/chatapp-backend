@@ -5,10 +5,10 @@ import com.group4.chatapp.dtos.invitation.InvitationWithNewRoomDto;
 import com.group4.chatapp.dtos.invitation.ReplyResponse;
 import com.group4.chatapp.exceptions.ApiException;
 import com.group4.chatapp.models.ChatRoom;
-import com.group4.chatapp.models.UserRelation;
+import com.group4.chatapp.models.Invitation;
 import com.group4.chatapp.models.User;
 import com.group4.chatapp.repositories.ChatRoomRepository;
-import com.group4.chatapp.repositories.UserRelationRepository;
+import com.group4.chatapp.repositories.InvitationRepository;
 import com.group4.chatapp.services.ChatRoomService;
 import com.group4.chatapp.services.UserService;
 import lombok.RequiredArgsConstructor;
@@ -28,26 +28,26 @@ class InvitationReplyService {
     private final UserService userService;
     private final ChatRoomService chatRoomService;
 
-    private final UserRelationRepository repository;
+    private final InvitationRepository repository;
     private final ChatRoomRepository chatRoomRepository;
 
     private final SimpMessagingTemplate messagingTemplate;
 
-    private void updateInvitation(UserRelation userRelation, boolean isAccepted) {
+    private void updateInvitation(Invitation invitation, boolean isAccepted) {
 
         var status = isAccepted
-            ? UserRelation.Status.ACCEPTED
-            : UserRelation.Status.REJECTED;
+            ? Invitation.Status.ACCEPTED
+            : Invitation.Status.REJECTED;
 
-        userRelation.setStatus(status);
-        repository.saveAndFlush(userRelation);
+        invitation.setStatus(status);
+        repository.saveAndFlush(invitation);
     }
 
-    private ChatRoom createDuoChatRoom(UserRelation userRelation) {
+    private ChatRoom createDuoChatRoom(Invitation invitation) {
 
         var members = Set.of(
-            userRelation.getSender(),
-            userRelation.getReceiver()
+            invitation.getSender(),
+            invitation.getReceiver()
         );
 
         var newChatRoom = ChatRoom.builder()
@@ -69,22 +69,22 @@ class InvitationReplyService {
     }
 
     private void notifyUserReply(
-        UserRelation userRelation,
+        Invitation invitation,
         @Nullable ChatRoomDto newChatRoomDto
     ) {
 
-        var isFriendRequest = userRelation.getChatRoom() != null;
-        var needSendToMembers = isFriendRequest && userRelation.isAccepted();
+        var isFriendRequest = invitation.getChatRoom() != null;
+        var needSendToMembers = isFriendRequest && invitation.isAccepted();
 
         var receiver = new ArrayList<User>();
 
         if (needSendToMembers) {
-            receiver.addAll(userRelation.getChatRoom().getMembers());
+            receiver.addAll(invitation.getChatRoom().getMembers());
         } else {
-            receiver.add(userRelation.getSender());
+            receiver.add(invitation.getSender());
         }
 
-        var sendObject = new InvitationWithNewRoomDto(userRelation, newChatRoomDto);
+        var sendObject = new InvitationWithNewRoomDto(invitation, newChatRoomDto);
 
         receiver.parallelStream()
             .forEach(user ->
@@ -96,14 +96,14 @@ class InvitationReplyService {
             );
     }
 
-    private ChatRoom getNewChatRoom(UserRelation userRelation) {
+    private ChatRoom getNewChatRoom(Invitation invitation) {
 
-        if (userRelation.isFriendRequest()) {
-            return createDuoChatRoom(userRelation);
+        if (invitation.isFriendRequest()) {
+            return createDuoChatRoom(invitation);
         }
 
-        var chatRoom = userRelation.getChatRoom();
-        var receiver = userRelation.getReceiver();
+        var chatRoom = invitation.getChatRoom();
+        var receiver = invitation.getReceiver();
 
         assert chatRoom != null;
 
@@ -118,7 +118,7 @@ class InvitationReplyService {
         return createChatGroup(members);
     }
 
-    private UserRelation getInvitationAndCheck(User user, long invitationId) {
+    private Invitation getInvitationAndCheck(User user, long invitationId) {
 
         var invitation = repository.findById(invitationId)
             .orElseThrow(() -> new ApiException(

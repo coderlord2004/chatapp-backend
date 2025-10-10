@@ -8,8 +8,8 @@ import com.group4.chatapp.repositories.ChatRoomRepository;
 import com.group4.chatapp.repositories.MessageRepository;
 import com.group4.chatapp.services.ChatRoomService;
 import com.group4.chatapp.services.UserService;
-import com.group4.chatapp.services.invitations.UserRelationCheckService;
-import com.group4.chatapp.services.invitations.UserRelationService;
+import com.group4.chatapp.services.invitations.InvitationCheckService;
+import com.group4.chatapp.services.invitations.InvitationService;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.http.HttpStatus;
@@ -18,7 +18,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -28,8 +27,8 @@ public class MessageCheckService {
     private MessageRepository messageRepository;
     private ChatRoomRepository chatRoomRepository;
     private ChatRoomService chatRoomService;
-    private UserRelationService userRelationService;
-    private UserRelationCheckService userRelationCheckService;
+    private InvitationService invitationService;
+    private InvitationCheckService invitationCheckService;
 
     public ChatRoom receiveChatRoomAndCheck(long id, User user) {
 
@@ -46,7 +45,7 @@ public class MessageCheckService {
             List<User> members = chatRoom.getMembers().stream().toList();
             User authUser = members.get(0);
             User otherUser = members.get(1);
-            userRelationCheckService.checkSenderPermission(authUser, otherUser);
+            invitationCheckService.checkSenderPermission(authUser, otherUser);
         }
         var userInChatRoom = chatRoomRepository.userIsMemberInChatRoom(user.getId(), id);
         if (!userInChatRoom) {

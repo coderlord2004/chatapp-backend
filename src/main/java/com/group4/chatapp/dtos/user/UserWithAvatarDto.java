@@ -3,11 +3,14 @@ package com.group4.chatapp.dtos.user;
 import com.group4.chatapp.dtos.AttachmentDto;
 import com.group4.chatapp.models.User;
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.springframework.lang.Nullable;
 
-@Getter
+@Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class UserWithAvatarDto {
 
     private long id;

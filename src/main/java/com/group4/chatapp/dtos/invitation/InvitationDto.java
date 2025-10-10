@@ -1,12 +1,11 @@
 package com.group4.chatapp.dtos.invitation;
 
 
-import com.group4.chatapp.dtos.ChatRoomDto;
 import com.group4.chatapp.dtos.user.UserWithAvatarDto;
 import com.group4.chatapp.models.Invitation;
 import org.springframework.lang.Nullable;
 
-public record InvitationWithNewRoomDto(
+public record InvitationDto(
 
     long id,
 
@@ -16,16 +15,10 @@ public record InvitationWithNewRoomDto(
     @Nullable
     Long chatRoomId,
 
-    Invitation.Status status,
-
-    @Nullable
-    ChatRoomDto chatRoomDto
+    Invitation.Status status
 ) {
 
-    public InvitationWithNewRoomDto(
-        Invitation invitation,
-        @Nullable ChatRoomDto chatRoomDto
-    ) {
+    public InvitationDto(Invitation invitation) {
 
         this(
             invitation.getId(),
@@ -36,8 +29,7 @@ public record InvitationWithNewRoomDto(
                 ? null
                 : invitation.getChatRoom().getId(),
 
-            invitation.getStatus(),
-            chatRoomDto
+            invitation.getStatus()
         );
     }
 }

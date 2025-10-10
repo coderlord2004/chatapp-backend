@@ -26,20 +26,4 @@ public interface ReactionRepository extends JpaRepository<Reaction, Long> {
             ORDER BY r.reactionType DESC
             """)
     List<Object[]> countByReactionType(Long targetId, TargetType targetType);
-
-    @Query("""
-            SELECT r.reactionType
-            FROM Reaction r
-            WHERE r.targetId = ?1 AND r.targetType = ?2
-            GROUP BY r.reactionType
-            ORDER BY COUNT(r.reactionType) DESC
-            """)
-    List<ReactionType> getTopReactionType(Long targetId, TargetType targetType, Pageable pageable);
-
-    @Query("""
-            SELECT r.reactionType
-            FROM Reaction r
-            WHERE r.targetId = ?1 AND r.targetType = 'POST' AND r.user.id = ?2
-            """)
-    ReactionType getUserReaction(Long postId, Long userId);
 }

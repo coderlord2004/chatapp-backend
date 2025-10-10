@@ -1,5 +1,7 @@
 package com.group4.chatapp.repositories;
 
+import com.group4.chatapp.models.Enum.ReactionType;
+import com.group4.chatapp.models.Enum.TargetType;
 import com.group4.chatapp.models.Post;
 import com.group4.chatapp.models.User;
 import org.springframework.data.domain.Pageable;
@@ -64,4 +66,20 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             WHERE p.user.id = ?1 AND (p.visibility = 'PUBLIC' OR p.visibility = 'FRIEND')
             """)
     Long countPostByUserId(Long userId);
+
+    @Query("""
+            SELECT r.reactionType
+            FROM Reaction r
+            WHERE r.targetId = ?1 AND r.targetType = ?2
+            GROUP BY r.reactionType
+            ORDER BY COUNT(r.reactionType) DESC
+            """)
+    List<ReactionType> getTopReactionType(Long targetId, TargetType targetType, Pageable pageable);
+
+    @Query("""
+            SELECT r.reactionType
+            FROM Reaction r
+            WHERE r.targetId = ?1 AND r.targetType = 'POST' AND r.user.id = ?2
+            """)
+    ReactionType getUserReaction(Long postId, Long userId);
 }

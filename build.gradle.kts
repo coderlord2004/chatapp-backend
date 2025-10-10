@@ -32,6 +32,7 @@ dependencies {
     compileOnly("org.projectlombok:lombok:1.18.34")
     annotationProcessor("org.projectlombok:lombok:1.18.34")
 
+    annotationProcessor("org.projectlombok:lombok-mapstruct-binding:0.2.0")
     runtimeOnly("org.postgresql:postgresql")
 
     implementation("org.bouncycastle:bcprov-jdk18on:1.79")

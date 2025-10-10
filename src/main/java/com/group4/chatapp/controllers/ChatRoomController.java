@@ -18,7 +18,7 @@ import java.util.List;
     @SecurityRequirement(name = "bearerAuth")
 })
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/")
+@RequestMapping("/api/v1")
 public class ChatRoomController {
 
     private final ChatRoomService chatRoomService;

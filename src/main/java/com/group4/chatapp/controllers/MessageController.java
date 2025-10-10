@@ -19,7 +19,7 @@ import java.util.List;
     @SecurityRequirement(name = "basicAuth"),
     @SecurityRequirement(name = "bearerAuth")
 })
-@RequestMapping("/api/v1/messages/")
+@RequestMapping("/api/v1/messages")
 @RequiredArgsConstructor
 public class MessageController {
 

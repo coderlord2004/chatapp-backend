@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1/reaction/")
+@RequestMapping("/api/v1/reaction")
 @RequiredArgsConstructor
 public class ReactionController {
     private final ReactionService reactionService;

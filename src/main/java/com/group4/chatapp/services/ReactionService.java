@@ -1,12 +1,12 @@
 package com.group4.chatapp.services;
 
 import com.group4.chatapp.dtos.ReactionDto;
+import com.group4.chatapp.models.*;
+import com.group4.chatapp.models.Enum.NotificationType;
 import com.group4.chatapp.models.Enum.ReactionType;
 import com.group4.chatapp.models.Enum.TargetType;
-import com.group4.chatapp.models.Post;
-import com.group4.chatapp.models.Reaction;
-import com.group4.chatapp.models.User;
 import com.group4.chatapp.repositories.ContentRepository;
+import com.group4.chatapp.repositories.NotificationRepository;
 import com.group4.chatapp.repositories.ReactionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -21,41 +21,48 @@ public class ReactionService {
     private UserService userService;
     private ReactionRepository reactionRepository;
     private ContentRepository contentRepository;
+    private NotificationRepository notificationRepository;
+    private TargetResolverService targetResolverService;
 
     public void saveReaction(ReactionDto reactionDto) {
         User authUser = userService.getUserOrThrows();
 
-        Reaction reaction = reactionRepository.findByUserIdAndTargetId(authUser.getId(), reactionDto.getTargetId(), reactionDto.getTargetType());
+        Long targetId = reactionDto.getTargetId();
+        TargetType targetType = reactionDto.getTargetType();
+        ReactionType reactionType = reactionDto.getReactionType();
 
-        if (reactionDto.getReactionType() == null) {
-            throw new IllegalArgumentException("ReactionType must not be null");
-        }
+        Reaction reaction = reactionRepository.findByUserIdAndTargetId(authUser.getId(), targetId, targetType);
 
         if (reaction != null) {
-            if (reaction.getReactionType() == reactionDto.getReactionType()) {
+            if (reaction.getReactionType() == reactionType) {
                 reactionRepository.delete(reaction);
-                contentRepository.decreaseReactions(reactionDto.getTargetId());
+                contentRepository.decreaseReactions(targetId);
             } else {
-                reaction.setReactionType(reactionDto.getReactionType());
+                reaction.setReactionType(reactionType);
                 reactionRepository.save(reaction);
             }
         } else {
             reaction = Reaction.builder()
-                    .targetId(reactionDto.getTargetId())
-                    .targetType(reactionDto.getTargetType())
-                    .reactionType(reactionDto.getReactionType())
+                    .targetId(targetId)
+                    .targetType(targetType)
+                    .reactionType(reactionType)
                     .user(authUser)
                     .build();
             reactionRepository.save(reaction);
             contentRepository.increaseReactions(reaction.getTargetId());
+
+            Notification notification = Notification.builder()
+                    .title("Bày tỏ cảm xúc mới")
+                    .content(authUser.getUsername() + " đã bình luận vào 1 bài viết của bạn")
+                    .sender(authUser)
+                    .receiver(targetResolverService.getAuthor(targetId, targetType))
+                    .type(NotificationType.COMMENT)
+                    .targetId(targetId)
+                    .targetType(targetType)
+                    .build();
+            notificationRepository.save(notification);
         }
     }
 
-    public List<ReactionType> getTopReactionType(Long postId) {
-        return reactionRepository.getTopReactionType(postId, TargetType.POST, PageRequest.of(0, 3));
-    }
 
-    public ReactionType getUserReaction(Long postId, Long userId) {
-        return reactionRepository.getUserReaction(postId, userId);
-    }
 }

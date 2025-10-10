@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/posts/")
+@RequestMapping("/api/v1/posts")
 @RequiredArgsConstructor
 public class PostController {
     private final PostService postService;
@@ -57,5 +57,10 @@ public class PostController {
     @PostMapping("/share/")
     public void sharePost(@Valid @RequestBody SharePostDto dto) {
         postService.sharePost(dto);
+    }
+
+    @PostMapping("/view/increase/")
+    public void increaseView(@RequestParam("postId") Long postId) {
+        postService.increaseView(postId);
     }
 }

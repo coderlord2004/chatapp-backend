@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
         @SecurityRequirement(name = "basicAuth"),
         @SecurityRequirement(name = "bearerAuth")
 })
-@RequestMapping("/api/v1/call/")
+@RequestMapping("/api/v1/call")
 @RequiredArgsConstructor
 public class CallController {
     private final CallService callService;

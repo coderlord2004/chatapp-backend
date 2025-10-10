@@ -1,40 +1,42 @@
 package com.group4.chatapp.services.invitations;
 
-import com.group4.chatapp.dtos.invitation.UserRelationDto;
+import com.group4.chatapp.dtos.invitation.InvitationDto;
 import com.group4.chatapp.dtos.invitation.InvitationSendDto;
 import com.group4.chatapp.exceptions.ApiException;
 import com.group4.chatapp.models.ChatRoom;
-import com.group4.chatapp.models.UserRelation;
+import com.group4.chatapp.models.Enum.NotificationType;
+import com.group4.chatapp.models.Notification;
+import com.group4.chatapp.models.Invitation;
 import com.group4.chatapp.models.User;
 import com.group4.chatapp.repositories.ChatRoomRepository;
-import com.group4.chatapp.repositories.UserRelationRepository;
-import com.group4.chatapp.repositories.UserRepository;
+import com.group4.chatapp.repositories.NotificationRepository;
+import com.group4.chatapp.repositories.InvitationRepository;
 import com.group4.chatapp.services.UserService;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.springframework.http.HttpStatus;
 import org.springframework.lang.Nullable;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.Objects;
-
 @Service
 @RequiredArgsConstructor
+@FieldDefaults(makeFinal = true)
 class InvitationSendService {
+    private UserService userService;
 
-    private final UserService userService;
+    private InvitationRepository repository;
+    private ChatRoomRepository chatRoomRepository;
+    private InvitationCheckService invitationCheckService;
+    private NotificationRepository notificationRepository;
 
-    private final UserRelationRepository repository;
-    private final ChatRoomRepository chatRoomRepository;
-    private final UserRelationCheckService userRelationCheckService;
+    private SimpMessagingTemplate messagingTemplate;
 
-    private final SimpMessagingTemplate messagingTemplate;
-
-    private void notifyInvitation(UserRelation userRelation) {
+    private void notifyInvitation(Invitation invitation) {
         messagingTemplate.convertAndSendToUser(
-            userRelation.getReceiver().getUsername(),
+            invitation.getReceiver().getUsername(),
             "/queue/invitations/",
-            new UserRelationDto(userRelation)
+            new InvitationDto(invitation)
         );
     }
 
@@ -49,7 +51,7 @@ class InvitationSendService {
             );
         }
         User receiver = userService.getUserByUsername(receiverUsername);
-        userRelationCheckService.checkSenderPermission(sender, receiver);
+        invitationCheckService.checkSenderPermission(sender, receiver);
 
         return receiver;
     }
@@ -72,7 +74,7 @@ class InvitationSendService {
         var isReceiverSent = repository.existsFriendRequestWith(
             receiver.getId(),
             sender.getId(),
-            UserRelation.Status.PENDING
+            Invitation.Status.PENDING
         );
 
         if (isReceiverSent) {
@@ -115,14 +117,14 @@ class InvitationSendService {
             return repository.existsFriendRequestWith(
                 sender.getId(),
                 receiver.getId(),
-                UserRelation.Status.PENDING
+                Invitation.Status.PENDING
             );
         } else {
-            return repository.existGroupUserRelationWith(
+            return repository.existGroupInvitationWith(
                 sender.getId(),
                 receiver.getId(),
                 chatRoom.getId(),
-                UserRelation.Status.PENDING
+                Invitation.Status.PENDING
             );
         }
     }
@@ -166,14 +168,23 @@ class InvitationSendService {
 
         validateChatRoomAndUsers(sender, receiver, chatRoom);
 
-        var invitation = UserRelation.builder()
-            .status(UserRelation.Status.PENDING)
+        var invitation = Invitation.builder()
+            .status(Invitation.Status.PENDING)
             .sender(sender)
             .receiver(receiver)
             .chatRoom(chatRoom)
             .build();
-
         invitation = repository.saveAndFlush(invitation);
+
+        Notification notification = Notification.builder()
+                .title("Lời mời kết bạn mới")
+                .content(sender.getUsername() + " đã gửi cho bạn lời mời kết bạn")
+                .sender(sender)
+                .receiver(receiver)
+                .type(NotificationType.INVITATION)
+                .build();
+        notificationRepository.save(notification);
+
         notifyInvitation(invitation);
     }
 }

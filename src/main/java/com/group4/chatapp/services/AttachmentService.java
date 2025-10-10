@@ -1,10 +1,12 @@
 package com.group4.chatapp.services;
 
 import com.group4.chatapp.dtos.UploadFileDto;
+import com.group4.chatapp.exceptions.ApiException;
 import com.group4.chatapp.models.Attachment;
 import com.group4.chatapp.models.Attachment.FileType;
 import com.group4.chatapp.repositories.AttachmentRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -18,6 +20,13 @@ public class AttachmentService {
     private final FileTypeService fileTypeService;
     private final CloudinaryService cloudinaryService;
     private final AttachmentRepository attachmentRepository;
+
+    public Attachment getAttachment(Long id) {
+        return attachmentRepository.findById(id).orElseThrow(() -> new ApiException(
+                HttpStatus.BAD_REQUEST,
+                "Attachment not found!"
+        ));
+    }
 
     public List<Attachment> saveFiles(List<MultipartFile> files) {
         if (files == null || files.isEmpty()) {

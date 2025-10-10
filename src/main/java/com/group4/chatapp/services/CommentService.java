@@ -4,11 +4,12 @@ import com.group4.chatapp.dtos.comment.CommentRequestDto;
 import com.group4.chatapp.dtos.comment.CommentResponseDto;
 import com.group4.chatapp.dtos.comment.CommentDto;
 import com.group4.chatapp.exceptions.ApiException;
-import com.group4.chatapp.models.Comment;
+import com.group4.chatapp.models.*;
+import com.group4.chatapp.models.Enum.NotificationType;
 import com.group4.chatapp.models.Enum.TargetType;
-import com.group4.chatapp.models.User;
 import com.group4.chatapp.repositories.CommentRepository;
 import com.group4.chatapp.repositories.ContentRepository;
+import com.group4.chatapp.repositories.NotificationRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.PageRequest;
@@ -28,19 +29,38 @@ public class CommentService {
     private CommentRepository commentRepository;
     private UserService userService;
     private ContentRepository contentRepository;
+    private NotificationRepository notificationRepository;
+    private TargetResolverService targetResolverService;
 
     public void createComment(CommentRequestDto dto) {
         User authUser = userService.getUserOrThrows();
+
+        Long targetId = dto.getTargetId();
+        TargetType targetType = dto.getTargetType();
+        String content = dto.getContent();
+
         Long totalCommentByUser = commentRepository.countRootCommentByUserId(authUser.getId(), dto.getTargetId(), dto.getTargetType());
+
         if (totalCommentByUser < 3) {
             Comment comment = Comment.builder()
                     .user(authUser)
-                    .content(dto.getContent())
+                    .content(content)
+                    .targetId(targetId)
+                    .targetType(targetType)
+                    .build();
+            commentRepository.save(comment);
+
+            Notification notification = Notification.builder()
+                    .title("Bình luận bài viết mới")
+                    .content(authUser.getUsername() + " đã bình luận vào 1 bài viết của bạn")
+                    .sender(authUser)
+                    .receiver(targetResolverService.getAuthor(targetId, targetType))
+                    .type(NotificationType.COMMENT)
                     .targetId(dto.getTargetId())
                     .targetType(dto.getTargetType())
                     .build();
+            notificationRepository.save(notification);
 
-            commentRepository.save(comment);
             contentRepository.increaseComments(dto.getTargetId());
         } else {
             throw new ApiException(

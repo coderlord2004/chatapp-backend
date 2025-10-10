@@ -5,13 +5,11 @@ import com.group4.chatapp.dtos.post.PostResponseDto;
 import com.group4.chatapp.dtos.post.SharePostDto;
 import com.group4.chatapp.dtos.user.UserWithAvatarDto;
 import com.group4.chatapp.exceptions.ApiException;
-import com.group4.chatapp.models.Attachment;
+import com.group4.chatapp.models.*;
 import com.group4.chatapp.models.Enum.PostAttachmentType;
 import com.group4.chatapp.models.Enum.PostVisibilityType;
 import com.group4.chatapp.models.Enum.ReactionType;
-import com.group4.chatapp.models.Post;
-import com.group4.chatapp.models.User;
-import com.group4.chatapp.models.UserRelation;
+import com.group4.chatapp.models.Enum.TargetType;
 import com.group4.chatapp.repositories.*;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -31,8 +29,7 @@ public class PostService {
     private AttachmentService attachmentService;
     private PostRepository postRepository;
     private UserService userService;
-    private UserRelationRepository userRelationRepository;
-    private ReactionService reactionService;
+    private InvitationRepository invitationRepository;
     private CloudinaryService cloudinaryService;
     private ContentRepository contentRepository;
 
@@ -57,8 +54,8 @@ public class PostService {
         List<Post> posts = postRepository.getPostsByAuthUser(authUser, PageRequest.of(page-1, 20));
 
         return posts.stream().map(post -> {
-            List<ReactionType> topReactionTypes = reactionService.getTopReactionType(post.getId());
-            ReactionType reactionType = reactionService.getUserReaction(post.getId(), post.getUser().getId());
+            List<ReactionType> topReactionTypes = getTopReactionType(post.getId());
+            ReactionType reactionType = getUserReaction(post.getId(), post.getUser().getId());
             return new PostResponseDto(post, topReactionTypes, reactionType);
         }).toList();
     }
@@ -66,21 +63,22 @@ public class PostService {
     public List<PostResponseDto> getPostsByUsername(String username, int page) {
         User authUser = userService.getUserOrThrows();
         User otherUser = userService.getUserByUsername(username);
-        UserRelation userRelation = userRelationRepository.getUserRelation(authUser.getId(), otherUser.getId());
 
-        if (userRelation.getIsBlocking()) return new ArrayList<>();
+        Invitation invitation = invitationRepository.findBySenderIdAndReceiverId(authUser.getId(), otherUser.getId());
+
+        if (invitation.isBlock()) return new ArrayList<>();
 
         PageRequest pageRequest = PageRequest.of(page-1, 20);
         List<Post> posts;
-        if (userRelation.isAccepted()) {
+        if (invitation.isAccepted()) {
             posts = postRepository.getPostsIfIsFriend(username, pageRequest);
         } else {
             posts = postRepository.getPostsIfIsNotFriend(username, pageRequest);
         }
 
         return posts.stream().map(post -> {
-            List<ReactionType> topReactionTypes = reactionService.getTopReactionType(post.getId());
-            ReactionType reactionType = reactionService.getUserReaction(post.getId(), post.getUser().getId());
+            List<ReactionType> topReactionTypes = getTopReactionType(post.getId());
+            ReactionType reactionType = getUserReaction(post.getId(), post.getUser().getId());
             return new PostResponseDto(post, topReactionTypes, reactionType);
         }).toList();
     }
@@ -154,8 +152,8 @@ public class PostService {
         List<UserWithAvatarDto> friends = userService.getListFriend();
         List<Post> latestFriendPosts = new ArrayList<>();
         for (UserWithAvatarDto friend : friends) {
-            UserRelation userRelation = userRelationRepository.getUserRelation(authUser.getId(), friend.getId());
-            if (userRelation.getIsBlocking()) {
+            Invitation invitation = invitationRepository.findBySenderIdAndReceiverId(authUser.getId(), friend.getId());
+            if (invitation.isBlock()) {
                 List<Post> posts = postRepository.getNewPostByUserId(friend.getId(), PageRequest.of(page - 1, 1));
                 if (posts != null && !posts.isEmpty() && posts.getFirst() != null) {
                     latestFriendPosts.add(posts.getFirst());
@@ -176,12 +174,24 @@ public class PostService {
             if (!seenKeys.contains(key)) {
                 seenKeys.add(key);
 
-                List<ReactionType> topReactionTypes = reactionService.getTopReactionType(post.getId());
-                ReactionType reactionType = reactionService.getUserReaction(post.getId(), post.getUser().getId());
+                List<ReactionType> topReactionTypes = getTopReactionType(post.getId());
+                ReactionType reactionType = getUserReaction(post.getId(), post.getUser().getId());
                 postResponseDtos.add(new PostResponseDto(post, topReactionTypes, reactionType));
             }
         }
         Collections.shuffle(postResponseDtos);
         return postResponseDtos;
+    }
+
+    public void increaseView(Long postId) {
+        contentRepository.increaseViews(postId);
+    }
+
+    public List<ReactionType> getTopReactionType(Long postId) {
+        return postRepository.getTopReactionType(postId, TargetType.POST, PageRequest.of(0, 3));
+    }
+
+    public ReactionType getUserReaction(Long postId, Long userId) {
+        return postRepository.getUserReaction(postId, userId);
     }
 }

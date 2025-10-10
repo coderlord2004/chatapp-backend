@@ -10,7 +10,7 @@ import org.springframework.lang.Nullable;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserRelation {
+public class Invitation {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,13 +26,12 @@ public class UserRelation {
     @ManyToOne
     private ChatRoom chatRoom;
 
-    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private Status status;
 
-    @Column(name = "is_blocking")
+    @Enumerated(EnumType.STRING)
     @Builder.Default
-    private Boolean isBlocking = false;
+    private RestrictionType restriction = RestrictionType.NONE;
 
     public boolean isFriendRequest() {
         return chatRoom == null;
@@ -46,7 +45,19 @@ public class UserRelation {
         return status == Status.ACCEPTED;
     }
 
+    public boolean isBlock() {
+        return restriction == RestrictionType.BLOCKED;
+    }
+
+    public boolean isMute() {
+        return restriction == RestrictionType.MUTED;
+    }
+
     public enum Status {
-        PENDING, ACCEPTED, REJECTED, BLOCKED
+        PENDING, ACCEPTED, REJECTED
+    }
+
+    public enum RestrictionType {
+        NONE, BLOCKED, MUTED
     }
 }

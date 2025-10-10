@@ -31,13 +31,6 @@ spring:
       max-file-size: "100MB"
       max-request-size: "150MB"
       file-size-threshold: "2KB"
-org:
-  jobrunr:
-    background-job-server:
-      enabled: true
-    dashboard:
-      enabled: true
-      port: 8081
 
 server:
   port: "${PORT:8000}"
