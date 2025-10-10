@@ -5,16 +5,15 @@ import com.group4.chatapp.dtos.post.PostResponseDto;
 import com.group4.chatapp.dtos.post.SharePostDto;
 import com.group4.chatapp.dtos.user.UserWithAvatarDto;
 import com.group4.chatapp.exceptions.ApiException;
+import com.group4.chatapp.mappers.UserMapper;
 import com.group4.chatapp.models.*;
-import com.group4.chatapp.models.Enum.PostAttachmentType;
-import com.group4.chatapp.models.Enum.PostVisibilityType;
-import com.group4.chatapp.models.Enum.ReactionType;
-import com.group4.chatapp.models.Enum.TargetType;
+import com.group4.chatapp.models.Enum.*;
 import com.group4.chatapp.repositories.*;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,9 +28,13 @@ public class PostService {
     private AttachmentService attachmentService;
     private PostRepository postRepository;
     private UserService userService;
+    private UserMapper userMapper;
     private InvitationRepository invitationRepository;
     private CloudinaryService cloudinaryService;
     private ContentRepository contentRepository;
+    private NotificationService notificationService;
+
+    private SimpMessagingTemplate simpMessagingTemplate;
 
     public Post getPost(Long postId) {
         return postRepository.findById(postId).orElseThrow(() -> new ApiException(
@@ -105,7 +108,17 @@ public class PostService {
         post.setStatus(Post.PostStatus.PUBLISHED);
         post.setPublishedAt(LocalDateTime.now());
 
-        postRepository.save(post);
+        post = postRepository.save(post);
+
+        List<User> friends = userService.getListFriend(authUser.getId()).stream().map(userMapper::toUser).toList();
+        Notification notification = Notification.builder()
+                .title("Bài viết mới từ bạn bè")
+                .content(authUser.getUsername() + " đã đăng một bài viết mới.")
+                .type(NotificationType.POST)
+                .targetId(post.getId())
+                .targetType(TargetType.POST)
+                .build();
+        notificationService.notifyToUsers(authUser, friends, notification);
     }
 
     @Transactional
@@ -149,7 +162,7 @@ public class PostService {
     @Transactional(readOnly = true)
     public List<PostResponseDto> getNewsFeed(int page) {
         User authUser = userService.getUserOrThrows();
-        List<UserWithAvatarDto> friends = userService.getListFriend();
+        List<UserWithAvatarDto> friends = userService.getListFriend(authUser.getId());
         List<Post> latestFriendPosts = new ArrayList<>();
         for (UserWithAvatarDto friend : friends) {
             Invitation invitation = invitationRepository.findBySenderIdAndReceiverId(authUser.getId(), friend.getId());

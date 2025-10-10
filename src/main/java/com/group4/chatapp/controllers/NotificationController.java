@@ -4,10 +4,8 @@ import com.group4.chatapp.dtos.notification.NotificationResponseDto;
 import com.group4.chatapp.models.Notification;
 import com.group4.chatapp.services.NotificationService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -18,7 +16,13 @@ public class NotificationController {
     private final NotificationService notificationService;
 
     @GetMapping("/get-all/")
-    public List<NotificationResponseDto> getNotifications(@RequestParam("userId") Long userId) {
-        return notificationService.getNotificationsByUserId(userId);
+    public List<NotificationResponseDto> getNotifications() {
+        return notificationService.getNotifications();
+    }
+
+    @DeleteMapping("/delete/")
+    public ResponseEntity<String> deleteNotification(@RequestParam("id") Long id) {
+        notificationService.delete(id);
+        return ResponseEntity.ok("Delete notification successfully!");
     }
 }

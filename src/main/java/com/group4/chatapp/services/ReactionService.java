@@ -21,8 +21,8 @@ public class ReactionService {
     private UserService userService;
     private ReactionRepository reactionRepository;
     private ContentRepository contentRepository;
-    private NotificationRepository notificationRepository;
     private TargetResolverService targetResolverService;
+    private NotificationService notificationService;
 
     public void saveReaction(ReactionDto reactionDto) {
         User authUser = userService.getUserOrThrows();
@@ -60,7 +60,7 @@ public class ReactionService {
                     .targetId(targetId)
                     .targetType(targetType)
                     .build();
-            notificationRepository.save(notification);
+            notificationService.create(notification);
         }
     }
 

@@ -102,14 +102,13 @@ public class UserService {
         ));
     }
 
-    public List<UserWithAvatarDto> getListFriend () {
-        User authUser = getUserOrThrows();
-        List<Object[]> friends = repository.getListFriend(authUser.getId());
+    public List<UserWithAvatarDto> getListFriend (Long authUserId) {
+        List<Object[]> friends = repository.getListFriend(authUserId);
 
         return friends.stream().map(pair -> {
             User sender = (User) pair[0];
             User receiver = (User) pair[1];
-            User friend = Objects.equals(authUser.getId(), sender.getId()) ? receiver : sender;
+            User friend = Objects.equals(authUserId, sender.getId()) ? receiver : sender;
 
             return new UserWithAvatarDto(friend);
         }).toList();

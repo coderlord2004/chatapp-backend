@@ -29,8 +29,8 @@ public class CommentService {
     private CommentRepository commentRepository;
     private UserService userService;
     private ContentRepository contentRepository;
-    private NotificationRepository notificationRepository;
     private TargetResolverService targetResolverService;
+    private NotificationService notificationService;
 
     public void createComment(CommentRequestDto dto) {
         User authUser = userService.getUserOrThrows();
@@ -59,7 +59,7 @@ public class CommentService {
                     .targetId(dto.getTargetId())
                     .targetType(dto.getTargetType())
                     .build();
-            notificationRepository.save(notification);
+            notificationService.create(notification);
 
             contentRepository.increaseComments(dto.getTargetId());
         } else {
