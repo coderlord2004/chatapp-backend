@@ -25,12 +25,12 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
             WHERE n.sender.id = ?1
             ORDER BY n.sentOn ASC
             """)
-    Notification findOldestBySenderId(Long userId, Pageable pageable);
+    List<Notification> findOldestByReceiverId(Long userId, Pageable pageable);
 
     @Query("""
             SELECT COUNT(n)
             FROM Notification n
-            WHERE n.sender.id = ?1
+            WHERE n.receiver.id = ?1
             """)
     int countByUserId(Long userId);
 }

@@ -1,5 +1,7 @@
 package com.group4.chatapp.services;
 
+import com.group4.chatapp.dtos.attachment.AttachmentDto;
+import com.group4.chatapp.dtos.attachment.PostAttachmentResponseDto;
 import com.group4.chatapp.dtos.post.PostRequestDto;
 import com.group4.chatapp.dtos.post.PostResponseDto;
 import com.group4.chatapp.dtos.post.SharePostDto;
@@ -20,6 +22,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Stream;
+
+import static com.group4.chatapp.models.Enum.TargetType.ATTACHMENT;
 
 @Service
 @RequiredArgsConstructor
@@ -57,8 +61,8 @@ public class PostService {
         List<Post> posts = postRepository.getPostsByAuthUser(authUser, PageRequest.of(page-1, 20));
 
         return posts.stream().map(post -> {
-            List<ReactionType> topReactionTypes = getTopReactionType(post.getId());
-            ReactionType reactionType = getUserReaction(post.getId(), post.getUser().getId());
+            List<ReactionType> topReactionTypes = getTopReactionType(post.getId(), TargetType.POST);
+            ReactionType reactionType = getUserReaction(post.getId(), TargetType.POST, post.getUser().getId());
             return new PostResponseDto(post, topReactionTypes, reactionType);
         }).toList();
     }
@@ -80,13 +84,13 @@ public class PostService {
         }
 
         return posts.stream().map(post -> {
-            List<ReactionType> topReactionTypes = getTopReactionType(post.getId());
-            ReactionType reactionType = getUserReaction(post.getId(), post.getUser().getId());
+            List<ReactionType> topReactionTypes = getTopReactionType(post.getId(), TargetType.POST);
+            ReactionType reactionType = getUserReaction(post.getId(), TargetType.POST, post.getUser().getId());
             return new PostResponseDto(post, topReactionTypes, reactionType);
         }).toList();
     }
 
-    public void createPost(PostRequestDto dto)  {
+    public PostResponseDto createPost(PostRequestDto dto)  {
         if (dto.getCaption() == null && dto.getAttachments() == null) {
             throw new ApiException(
                     HttpStatus.BAD_REQUEST,
@@ -118,7 +122,9 @@ public class PostService {
                 .targetId(post.getId())
                 .targetType(TargetType.POST)
                 .build();
-        notificationService.notifyToUsers(authUser, friends, notification);
+        notificationService.notifyAndCreateToUsers(authUser, friends, notification);
+
+        return new PostResponseDto(post);
     }
 
     @Transactional
@@ -145,18 +151,34 @@ public class PostService {
         postRepository.deleteById(postId);
     }
 
-    public void sharePost(SharePostDto dto) {
+    public PostResponseDto share(SharePostDto dto) {
         User authUser = userService.getUserOrThrows();
-        Post post = getPost(dto.getSharedPostId());
+        Post post = getPost(dto.getPostId());
         Post newPost = Post.builder()
                 .caption(dto.getCaption())
                 .visibility(dto.getVisibility())
-                .sharedPost(post)
-                .postAttachmentType(PostAttachmentType.POST)
                 .user(authUser)
                 .build();
-        contentRepository.increaseShares(dto.getSharedPostId());
-        postRepository.save(newPost);
+        if (dto.getType().equals(TargetType.POST)) {
+            newPost.setPostAttachmentType(PostAttachmentType.POST);
+            newPost.setSharedPost(post);
+            contentRepository.increaseShares(dto.getPostId());
+        } else if (dto.getType().equals(TargetType.ATTACHMENT)) {
+            assert dto.getAttachmentId() != null;
+
+            Attachment attachment = attachmentService.getAttachment(dto.getAttachmentId());
+
+            newPost.setPostAttachmentType(PostAttachmentType.ATTACHMENT);
+            newPost.setSharedAttachment(attachment);
+            contentRepository.increaseShares(dto.getAttachmentId());
+        } else {
+            throw new ApiException(
+                    HttpStatus.BAD_REQUEST,
+                    "Target type is not supported."
+            );
+        }
+
+        return new PostResponseDto(postRepository.save(newPost));
     }
 
     @Transactional(readOnly = true)
@@ -166,14 +188,14 @@ public class PostService {
         List<Post> latestFriendPosts = new ArrayList<>();
         for (UserWithAvatarDto friend : friends) {
             Invitation invitation = invitationRepository.findBySenderIdAndReceiverId(authUser.getId(), friend.getId());
-            if (invitation.isBlock()) {
+            if (!invitation.isBlock()) {
                 List<Post> posts = postRepository.getNewPostByUserId(friend.getId(), PageRequest.of(page - 1, 1));
                 if (posts != null && !posts.isEmpty() && posts.getFirst() != null) {
                     latestFriendPosts.add(posts.getFirst());
                 }
             }
         }
-        List<Post> topPostViews = postRepository.getPostsByTopViews(PageRequest.of(page - 1, 10));
+        List<Post> topPostViews = postRepository.getPostsByTopViews(authUser.getId(), PageRequest.of(page - 1, 10));
 
         List<Post> newsFeeds = Stream.concat(
                 latestFriendPosts.stream(),
@@ -187,8 +209,8 @@ public class PostService {
             if (!seenKeys.contains(key)) {
                 seenKeys.add(key);
 
-                List<ReactionType> topReactionTypes = getTopReactionType(post.getId());
-                ReactionType reactionType = getUserReaction(post.getId(), post.getUser().getId());
+                List<ReactionType> topReactionTypes = getTopReactionType(post.getId(), TargetType.POST);
+                ReactionType reactionType = getUserReaction(post.getId(), TargetType.POST, post.getUser().getId());
                 postResponseDtos.add(new PostResponseDto(post, topReactionTypes, reactionType));
             }
         }
@@ -196,15 +218,28 @@ public class PostService {
         return postResponseDtos;
     }
 
+    public List<PostAttachmentResponseDto> getPostAttachments(Long postId) {
+        Post post = postRepository.findPostAndAttachment(postId);
+        List<PostAttachmentResponseDto> responses = new ArrayList<>();
+        for (Attachment attachment : post.getAttachments()) {
+            List<ReactionType> topReactionTypes = getTopReactionType(attachment.getId(), ATTACHMENT);
+            ReactionType reactionType = getUserReaction(attachment.getId(), TargetType.ATTACHMENT, post.getUser().getId());
+
+            responses.add(new PostAttachmentResponseDto(post.getId(), attachment, topReactionTypes, reactionType));
+        }
+
+        return responses;
+    }
+
     public void increaseView(Long postId) {
         contentRepository.increaseViews(postId);
     }
 
-    public List<ReactionType> getTopReactionType(Long postId) {
-        return postRepository.getTopReactionType(postId, TargetType.POST, PageRequest.of(0, 3));
+    public List<ReactionType> getTopReactionType(Long postId, TargetType targetType) {
+        return postRepository.getTopReactionType(postId, targetType, PageRequest.of(0, 3));
     }
 
-    public ReactionType getUserReaction(Long postId, Long userId) {
-        return postRepository.getUserReaction(postId, userId);
+    public ReactionType getUserReaction(Long postId, TargetType targetType, Long userId) {
+        return postRepository.getUserReaction(postId, targetType, userId);
     }
 }

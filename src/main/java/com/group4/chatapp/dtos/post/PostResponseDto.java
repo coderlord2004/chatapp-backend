@@ -1,7 +1,9 @@
 package com.group4.chatapp.dtos.post;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.group4.chatapp.dtos.AttachmentDto;
+import com.group4.chatapp.dtos.attachment.AttachmentDto;
+import com.group4.chatapp.dtos.attachment.PostAttachmentResponseDto;
+import com.group4.chatapp.dtos.attachment.SharedAttachmentDto;
 import com.group4.chatapp.dtos.user.UserWithAvatarDto;
 import com.group4.chatapp.models.Enum.PostAttachmentType;
 import com.group4.chatapp.models.Enum.PostVisibilityType;
@@ -11,13 +13,10 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
-@JsonInclude(JsonInclude.Include.NON_NULL)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -34,6 +33,7 @@ public class PostResponseDto {
     private Long totalViews;
     private List<AttachmentDto> attachments;
     private PostResponseDto sharedPost;
+    private SharedAttachmentDto sharedAttachment;
     private PostAttachmentType postAttachmentType;
     private UserWithAvatarDto author;
     private ReactionType reacted;
@@ -49,8 +49,10 @@ public class PostResponseDto {
         this.totalComments = post.getTotalComments();
         this.totalShares = post.getTotalShares();
         this.totalViews = post.getTotalViews();
-        this.attachments = post.getAttachments().stream().map(AttachmentDto::new).toList();
+
+        this.attachments = post.getAttachments() != null ? post.getAttachments().stream().map(AttachmentDto::new).toList() : new ArrayList<>();
         this.sharedPost = post.getSharedPost() != null ? new PostResponseDto(post.getSharedPost()) : null;
+        this.sharedAttachment = post.getSharedAttachment() != null ? new SharedAttachmentDto(post, post.getSharedAttachment()) : null;
         this.postAttachmentType = post.getPostAttachmentType();
         this.author = new UserWithAvatarDto(post.getUser());
     }

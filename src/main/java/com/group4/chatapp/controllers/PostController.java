@@ -1,5 +1,6 @@
 package com.group4.chatapp.controllers;
 
+import com.group4.chatapp.dtos.attachment.PostAttachmentResponseDto;
 import com.group4.chatapp.dtos.post.PostRequestDto;
 import com.group4.chatapp.dtos.post.PostResponseDto;
 import com.group4.chatapp.dtos.post.SharePostDto;
@@ -28,9 +29,8 @@ public class PostController {
     }
 
     @PostMapping(value = "/create/", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<String> createPost(@ModelAttribute PostRequestDto dto) {
-        postService.createPost(dto);
-        return ResponseEntity.ok("Create post successfully!");
+    public PostResponseDto createPost(@ModelAttribute PostRequestDto dto) {
+        return postService.createPost(dto);
     }
 
     @PutMapping(value = "/update/", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -55,8 +55,13 @@ public class PostController {
     }
 
     @PostMapping("/share/")
-    public void sharePost(@Valid @RequestBody SharePostDto dto) {
-        postService.sharePost(dto);
+    public PostResponseDto share(@Valid @RequestBody SharePostDto dto) {
+        return postService.share(dto);
+    }
+
+    @GetMapping("/attachment/")
+    public List<PostAttachmentResponseDto> getPostAttachments(@RequestParam("postId") Long postId) {
+        return postService.getPostAttachments(postId);
     }
 
     @PostMapping("/view/increase/")

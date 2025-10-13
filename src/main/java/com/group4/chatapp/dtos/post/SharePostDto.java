@@ -1,6 +1,7 @@
 package com.group4.chatapp.dtos.post;
 
 import com.group4.chatapp.models.Enum.PostVisibilityType;
+import com.group4.chatapp.models.Enum.TargetType;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -16,5 +17,8 @@ public class SharePostDto {
         @NotNull
         private PostVisibilityType visibility;
         @NotNull
-        private Long sharedPostId;
+        private TargetType type;
+        @NotNull
+        private Long postId;
+        private Long attachmentId;
 }

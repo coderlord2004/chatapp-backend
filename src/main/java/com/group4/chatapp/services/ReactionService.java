@@ -54,15 +54,16 @@ public class ReactionService {
             Notification notification = Notification.builder()
                     .title("Bày tỏ cảm xúc mới")
                     .content(authUser.getUsername() + " đã bình luận vào 1 bài viết của bạn")
-                    .sender(authUser)
-                    .receiver(targetResolverService.getAuthor(targetId, targetType))
                     .type(NotificationType.COMMENT)
                     .targetId(targetId)
                     .targetType(targetType)
                     .build();
-            notificationService.create(notification);
+            notificationService.notifyAndCreateToUser(
+                    authUser,
+                    targetResolverService.getAuthor(targetId, targetType),
+                    notification
+            );
         }
     }
-
 
 }

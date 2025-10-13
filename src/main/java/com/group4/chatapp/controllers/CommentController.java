@@ -19,8 +19,8 @@ public class CommentController {
     private final CommentService commentService;
 
     @PostMapping("/create/")
-    public void createComment(@Valid @RequestBody CommentRequestDto dto) {
-        commentService.createComment(dto);
+    public CommentResponseDto createComment(@Valid @RequestBody CommentRequestDto dto) {
+        return commentService.createComment(dto);
     }
 
     @GetMapping("/get/")

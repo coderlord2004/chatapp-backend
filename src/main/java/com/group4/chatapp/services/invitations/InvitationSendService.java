@@ -11,6 +11,7 @@ import com.group4.chatapp.models.User;
 import com.group4.chatapp.repositories.ChatRoomRepository;
 import com.group4.chatapp.repositories.NotificationRepository;
 import com.group4.chatapp.repositories.InvitationRepository;
+import com.group4.chatapp.services.NotificationService;
 import com.group4.chatapp.services.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -28,7 +29,7 @@ class InvitationSendService {
     private InvitationRepository repository;
     private ChatRoomRepository chatRoomRepository;
     private InvitationCheckService invitationCheckService;
-    private NotificationRepository notificationRepository;
+    private NotificationService notificationService;
 
     private SimpMessagingTemplate messagingTemplate;
 
@@ -179,11 +180,9 @@ class InvitationSendService {
         Notification notification = Notification.builder()
                 .title("Lời mời kết bạn mới")
                 .content(sender.getUsername() + " đã gửi cho bạn lời mời kết bạn")
-                .sender(sender)
-                .receiver(receiver)
                 .type(NotificationType.INVITATION)
                 .build();
-        notificationRepository.save(notification);
+        notificationService.notifyAndCreateToUser(sender, receiver, notification);
 
         notifyInvitation(invitation);
     }

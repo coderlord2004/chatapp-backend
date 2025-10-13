@@ -18,7 +18,6 @@ import java.util.List;
 @AllArgsConstructor
 @Table(name = "posts")
 public class Post extends Content {
-    @Lob
     private String caption;
 
     @Column(name = "caption_background")
@@ -29,7 +28,7 @@ public class Post extends Content {
     private PostVisibilityType visibility = PostVisibilityType.PUBLIC;
 
     @Enumerated(value = EnumType.STRING)
-    @Column(name = "post_attachment_type")
+    @Column(name = "post_attachment_type", nullable = false)
     @Builder.Default
     private PostAttachmentType postAttachmentType = PostAttachmentType.MEDIA;
 
@@ -47,9 +46,13 @@ public class Post extends Content {
     @JoinColumn(name = "user_id")
     private User user;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "shared_post_id")
     private Post sharedPost;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "shared_attachment_id")
+    private Attachment sharedAttachment;
 
     public enum PostStatus {
         PUBLISHED,

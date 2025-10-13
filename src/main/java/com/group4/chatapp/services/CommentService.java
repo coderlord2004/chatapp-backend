@@ -32,7 +32,7 @@ public class CommentService {
     private TargetResolverService targetResolverService;
     private NotificationService notificationService;
 
-    public void createComment(CommentRequestDto dto) {
+    public CommentResponseDto createComment(CommentRequestDto dto) {
         User authUser = userService.getUserOrThrows();
 
         Long targetId = dto.getTargetId();
@@ -48,20 +48,23 @@ public class CommentService {
                     .targetId(targetId)
                     .targetType(targetType)
                     .build();
-            commentRepository.save(comment);
+            comment = commentRepository.save(comment);
 
             Notification notification = Notification.builder()
                     .title("Bình luận bài viết mới")
                     .content(authUser.getUsername() + " đã bình luận vào 1 bài viết của bạn")
-                    .sender(authUser)
-                    .receiver(targetResolverService.getAuthor(targetId, targetType))
                     .type(NotificationType.COMMENT)
                     .targetId(dto.getTargetId())
                     .targetType(dto.getTargetType())
                     .build();
-            notificationService.create(notification);
+            notificationService.notifyAndCreateToUser(
+                    authUser,
+                    targetResolverService.getAuthor(targetId, targetType), notification
+            );
 
             contentRepository.increaseComments(dto.getTargetId());
+
+            return new CommentResponseDto(comment);
         } else {
             throw new ApiException(
                     HttpStatus.BAD_REQUEST,

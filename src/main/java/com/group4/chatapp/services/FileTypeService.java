@@ -43,6 +43,27 @@ public class FileTypeService {
         return "raw";
     }
 
+    public String getCloudinaryResourceType(String contentType) {
+        if (contentType == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing content type");
+        }
+
+        if (contentType.startsWith("image/")) {
+            return "image";
+        }
+
+        if (contentType.startsWith("video/")) {
+            return "video";
+        }
+
+        return "raw";
+    }
+
+    public String getName(String filename) {
+        int index = filename.lastIndexOf(".");
+        return filename.substring(0, index);
+    }
+
     public Attachment.FileType checkTypeInFileType(String resourceType, String format) {
 
         if (resourceType == null || format == null) {

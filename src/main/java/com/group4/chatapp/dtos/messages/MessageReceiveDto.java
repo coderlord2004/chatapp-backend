@@ -1,6 +1,6 @@
 package com.group4.chatapp.dtos.messages;
 
-import com.group4.chatapp.dtos.AttachmentDto;
+import com.group4.chatapp.dtos.attachment.AttachmentDto;
 import com.group4.chatapp.models.ChatMessage;
 
 import java.sql.Timestamp;

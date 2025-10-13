@@ -36,10 +36,9 @@ public class Attachment extends Content {
     @JoinColumn(name = "chat_message_id")
     private ChatMessage chatMessage;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id")
     private Post post;
-
 
     public static boolean isDocumentFormat(String format) {
         return DOCUMENT_FORMATS.contains(format.toLowerCase());

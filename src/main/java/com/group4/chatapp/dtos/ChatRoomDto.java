@@ -1,11 +1,11 @@
 package com.group4.chatapp.dtos;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.group4.chatapp.dtos.attachment.AttachmentDto;
 import com.group4.chatapp.dtos.messages.MessageReceiveDto;
 import com.group4.chatapp.dtos.user.UserWithAvatarDto;
 import com.group4.chatapp.models.ChatMessage;
 import com.group4.chatapp.models.ChatRoom;
-import com.group4.chatapp.models.User;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

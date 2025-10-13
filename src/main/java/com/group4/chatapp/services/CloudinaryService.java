@@ -68,15 +68,16 @@ public class CloudinaryService {
         var futures = new ArrayList<Future<Map<?, ?>>>();
 
         for (var file : files) {
-
-            var resourceType = fileTypeService.getMimeType(file.getContentType());
+            System.out.println("in get future: " + file.getOriginalFilename());
+            String resourceType = fileTypeService.getMimeType(file.getContentType());
+            String cloudinaryResourceType = fileTypeService.getCloudinaryResourceType(file.getContentType());
 
             futures.add(executor.submit(() -> {
                 try {
 
                     var result = cloudinary.uploader().upload(file.getBytes(), Map.of(
                         "folder", resourceType,
-                        "resource_type", resourceType
+                        "resource_type", cloudinaryResourceType
                     ));
 
                     System.out.println("Uploaded: " + file.getOriginalFilename());
@@ -101,7 +102,7 @@ public class CloudinaryService {
         for (int i = 0; i < futures.size(); i++) {
 
             var currentFile = files.get(i);
-            var filename = Objects.requireNonNull(currentFile.getOriginalFilename());
+            var filename = fileTypeService.getName(Objects.requireNonNull(currentFile.getOriginalFilename()));
 
             Map<String, ?> uploadResult;
 
@@ -119,7 +120,6 @@ public class CloudinaryService {
                     "resource_type", result.get("resource_type"),
                     "format", fileTypeService.getFileExtension(currentFile.getOriginalFilename())
                 );
-
             } catch (ExecutionException | InterruptedException e) {
                 uploadResult = Map.of(
                     "filename", filename,
@@ -160,29 +160,6 @@ public class CloudinaryService {
                     e.getMessage()
             );
         }
-    }
-
-    public void updateMultiFile(List<UpdateFileDto> updateFileDtos) {
-        updateFileDtos.forEach(updateFileDto -> {
-            try {
-                String folderName = fileTypeService.getMimeType(updateFileDto.file().getContentType());
-                String publicId = getPublicIdByUrl(updateFileDto.publicId());
-                var options = Map.of(
-                        "public_id", publicId,
-                        "folder", folderName,
-                        "overwrite", true,
-                        "invalidate", true
-                );
-
-                cloudinary.uploader().upload(updateFileDto.file().getBytes(), options);
-
-            } catch (Exception e) {
-                throw new ApiException(
-                        HttpStatus.BAD_REQUEST,
-                        e.getMessage()
-                );
-            }
-        });
     }
 
     public void deleteMultiFile(List<String> publicIds) {

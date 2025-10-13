@@ -1,10 +1,7 @@
 package com.group4.chatapp.services;
 
 import com.group4.chatapp.dtos.notification.NotificationResponseDto;
-import com.group4.chatapp.dtos.user.UserWithAvatarDto;
 import com.group4.chatapp.mappers.NotificationMapper;
-import com.group4.chatapp.models.Enum.NotificationType;
-import com.group4.chatapp.models.Enum.TargetType;
 import com.group4.chatapp.models.Notification;
 import com.group4.chatapp.models.User;
 import com.group4.chatapp.repositories.NotificationRepository;
@@ -15,6 +12,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -32,10 +30,10 @@ public class NotificationService {
     }
 
     public Notification create(Notification notification) {
-        Long senderId = notification.getSender().getId();
-        int totalNotification = notificationRepository.countByUserId(senderId);
+        Long receiverId = notification.getReceiver().getId();
+        int totalNotification = notificationRepository.countByUserId(receiverId);
         if (totalNotification >= 20) {
-            Notification oldestNotification = notificationRepository.findOldestBySenderId(senderId, PageRequest.of(0, 1));
+            Notification oldestNotification = notificationRepository.findOldestByReceiverId(receiverId, PageRequest.of(0, 1)).getFirst();
             notificationRepository.delete(oldestNotification);
         }
         return notificationRepository.save(notification);
@@ -45,17 +43,33 @@ public class NotificationService {
         notificationRepository.deleteById(id);
     }
 
-    public void notifyToUsers(User sourceUser, List<User> targetUsers, Notification notification) {
+    public void notifyAndCreateToUsers(User sourceUser, List<User> targetUsers, Notification notification) {
         for (User user : targetUsers) {
+            if (Objects.equals(sourceUser.getId(), user.getId())) continue;
+
             notification.setSender(sourceUser);
             notification.setReceiver(user);
 
             Notification newNotification = create(notification);
             simpMessagingTemplate.convertAndSendToUser(
-                    sourceUser.getUsername(),
+                    user.getUsername(),
                     "/queue/notification/",
-                    newNotification
+                    notificationMapper.toDto(newNotification)
             );
         }
+    }
+
+    public void notifyAndCreateToUser(User sender, User receiver, Notification notification) {
+        if (Objects.equals(sender.getId(), receiver.getId())) return;
+
+        notification.setSender(sender);
+        notification.setReceiver(receiver);
+
+        Notification newNotification = create(notification);
+        simpMessagingTemplate.convertAndSendToUser(
+                receiver.getUsername(),
+                "/queue/notification/",
+                notificationMapper.toDto(newNotification)
+        );
     }
 }

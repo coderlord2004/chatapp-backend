@@ -19,6 +19,14 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             SELECT p
             FROM Post p
             LEFT JOIN FETCH p.attachments
+            WHERE p.id = ?1
+            """)
+    Post findPostAndAttachment(Long postId);
+
+    @Query("""
+            SELECT p
+            FROM Post p
+            LEFT JOIN FETCH p.attachments
             WHERE p.user = ?1
             ORDER BY p.publishedAt DESC
             """)
@@ -46,7 +54,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             SELECT p
             FROM Post p
             LEFT JOIN FETCH p.attachments
-            WHERE p.user.id = ?1
+            WHERE p.user.id = ?1 AND p.visibility <> 'PRIVATE' AND p.status = 'PUBLISHED'
             ORDER BY p.publishedAt DESC
             """)
     List<Post> getNewPostByUserId(Long userId, Pageable pageable);
@@ -55,10 +63,10 @@ public interface PostRepository extends JpaRepository<Post, Long> {
            SELECT p
            FROM Post p
            LEFT JOIN FETCH p.attachments
-           WHERE p.totalViews >= 0
+           WHERE p.totalViews >= 0 AND p.user.id <> ?1
            ORDER BY p.totalViews DESC
            """)
-    List<Post> getPostsByTopViews(Pageable pageable);
+    List<Post> getPostsByTopViews(Long authUserId, Pageable pageable);
 
     @Query("""
             SELECT COUNT(p)
@@ -79,7 +87,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query("""
             SELECT r.reactionType
             FROM Reaction r
-            WHERE r.targetId = ?1 AND r.targetType = 'POST' AND r.user.id = ?2
+            WHERE r.targetId = ?1 AND r.targetType = ?2 AND r.user.id = ?3
             """)
-    ReactionType getUserReaction(Long postId, Long userId);
+    ReactionType getUserReaction(Long postId, TargetType targetType, Long userId);
 }

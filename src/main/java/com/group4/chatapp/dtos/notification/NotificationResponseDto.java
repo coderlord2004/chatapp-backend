@@ -25,17 +25,4 @@ public class NotificationResponseDto {
     private NotificationType type;
     private Long targetId;
     private TargetType targetType;
-
-    public NotificationResponseDto(Notification notification) {
-        id = notification.getId();
-        title = notification.getTitle();
-        content = notification.getContent();
-        sender = new UserWithAvatarDto(notification.getSender());
-        receiver = new UserWithAvatarDto(notification.getReceiver());
-        sentOn = notification.getSentOn();
-        isRead = notification.getIsRead();
-        type = notification.getType();
-        targetId = notification.getTargetId();
-        targetType = notification.getTargetType();
-    }
 }
