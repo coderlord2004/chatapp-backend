@@ -64,8 +64,8 @@ public class SecurityConfig {
         config.setAllowedOrigins(List.of(
                 "http://localhost:3000",
                 "https://nextchat-org.onrender.com",
-                "https://nextchat-ten-dusky.vercel.app/",
-                "https://social-connect-green.vercel.app/"
+                "https://nextchat-ten-dusky.vercel.app",
+                "https://social-connect-green.vercel.app"
         ));
         config.addAllowedHeader("*");
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
