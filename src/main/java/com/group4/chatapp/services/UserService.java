@@ -30,6 +30,8 @@ import org.springframework.web.ErrorResponseException;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -131,6 +133,17 @@ public class UserService {
 
             return new UserWithAvatarDto(friend);
         }).toList();
+    }
+
+    public void updateUserOnlineStatus(String username, boolean isOnline) {
+        User authUser = getUserByUsername(username);
+        authUser.setIsOnline(isOnline);
+        if (!isOnline) {
+            authUser.setLastOnline(Timestamp.valueOf(LocalDateTime.now()));
+        } else {
+            authUser.setLastOnline(null);
+        }
+        repository.save(authUser);
     }
 
     public Optional<User> getUserByAuthentication(@Nullable Authentication authentication) {

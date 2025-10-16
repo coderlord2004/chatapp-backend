@@ -48,6 +48,9 @@ public class User implements UserDetails {
     @Builder.Default
     private Boolean isOnline = false;
 
+    @Column(name = "last_online")
+    private Timestamp lastOnline;
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Post> posts;
 

@@ -53,7 +53,6 @@ public class WebSocketAuthenticationInterceptor implements ChannelInterceptor {
         if (authentication.isEmpty()) {
             return;
         }
-
         accessor.setUser(authentication.get());
     }
 
