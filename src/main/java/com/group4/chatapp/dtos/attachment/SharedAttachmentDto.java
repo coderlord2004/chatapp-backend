@@ -7,6 +7,7 @@ import com.group4.chatapp.models.Post;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
 @Data
@@ -16,7 +17,7 @@ public class SharedAttachmentDto {
     private String caption;
     private Integer captionBackground;
     private PostVisibilityType visibility;
-    private LocalDateTime publishedAt;
+    private Timestamp publishedAt;
     private UserWithAvatarDto author;
     
     private AttachmentDto attachment;

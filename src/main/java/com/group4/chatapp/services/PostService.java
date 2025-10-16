@@ -110,7 +110,6 @@ public class PostService {
         }
         post.setAttachments(attachments);
         post.setStatus(Post.PostStatus.PUBLISHED);
-        post.setPublishedAt(LocalDateTime.now());
 
         post = postRepository.save(post);
 

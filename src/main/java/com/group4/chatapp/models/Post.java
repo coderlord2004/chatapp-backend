@@ -37,7 +37,7 @@ public class Post extends Content {
 
     @CreationTimestamp
     @Column(name = "published_at")
-    private LocalDateTime publishedAt;
+    private Timestamp publishedAt;
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
     private List<Attachment> attachments;

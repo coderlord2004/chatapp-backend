@@ -13,6 +13,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +26,7 @@ public class PostResponseDto {
     private String caption;
     private Integer captionBackground;
     private PostVisibilityType visibility;
-    private LocalDateTime publishedAt;
+    private Timestamp publishedAt;
     private Long totalReactions;
     private List<ReactionType> topReactionTypes;
     private Long totalComments;
