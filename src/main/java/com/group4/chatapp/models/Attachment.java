@@ -32,7 +32,7 @@ public class Attachment extends Content {
     private String format;
     private String description;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "chat_message_id")
     private ChatMessage chatMessage;
 

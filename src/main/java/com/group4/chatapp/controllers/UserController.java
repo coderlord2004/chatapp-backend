@@ -1,5 +1,6 @@
 package com.group4.chatapp.controllers;
 
+import com.group4.chatapp.dtos.attachment.AttachmentDto;
 import com.group4.chatapp.dtos.token.TokenObtainPairDto;
 import com.group4.chatapp.dtos.token.TokenRefreshDto;
 import com.group4.chatapp.dtos.token.TokenRefreshRequestDto;
@@ -81,6 +82,14 @@ public class UserController {
     @GetMapping("/friend-suggestions/")
     public List<UserWithAvatarDto> getFriendSuggestions(@RequestParam(value = "page", defaultValue = "1") int page) {
         return userService.suggestFriend(page);
+    }
+
+    @GetMapping("/medias/")
+    public List<AttachmentDto> getUserMedias(
+            @NotNull @RequestParam("userId") Long userId,
+            @NotNull @RequestParam(value = "page", defaultValue = "1") int page
+    ) {
+        return userService.getUserMedias(userId, page - 1);
     }
 
     @PostMapping("/block/")

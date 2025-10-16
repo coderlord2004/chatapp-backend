@@ -15,9 +15,9 @@ import java.util.Objects;
 public class InvitationCheckService {
     private final InvitationRepository repository;
 
-    public void checkSenderPermission(User authUser, User otherUser) {
+    public Invitation checkSenderPermission(User authUser, User otherUser) {
         Invitation invitation = repository.findBySenderIdAndReceiverId(authUser.getId(), otherUser.getId());
-        if (invitation == null) return;
+        if (invitation == null) return null;
 
         if (invitation.isBlock()) {
             if (Objects.equals(authUser, invitation.getSender())) {
@@ -31,6 +31,8 @@ public class InvitationCheckService {
                         otherUser.getUsername() + " are blocking you!"
                 );
             }
+        } else {
+            return invitation;
         }
     }
 }

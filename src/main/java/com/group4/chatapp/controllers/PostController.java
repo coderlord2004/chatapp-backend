@@ -7,6 +7,7 @@ import com.group4.chatapp.dtos.post.SharePostDto;
 import com.group4.chatapp.repositories.PostRepository;
 import com.group4.chatapp.services.PostService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -59,13 +60,18 @@ public class PostController {
         return postService.share(dto);
     }
 
-    @GetMapping("/attachment/")
-    public List<PostAttachmentResponseDto> getPostAttachments(@RequestParam("postId") Long postId) {
+    @GetMapping("/attachments/")
+    public List<PostAttachmentResponseDto> getPostAttachments(@NotNull @RequestParam("postId") Long postId) {
         return postService.getPostAttachments(postId);
     }
 
+    @GetMapping("/attachment/get/")
+    public PostAttachmentResponseDto getAttachment(@RequestParam("id") Long id) {
+        return postService.getPostAttachment(id);
+    }
+
     @PostMapping("/view/increase/")
-    public void increaseView(@RequestParam("postId") Long postId) {
+    public void increaseView(@NotNull @RequestParam("postId") Long postId) {
         postService.increaseView(postId);
     }
 }

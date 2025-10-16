@@ -41,7 +41,7 @@ public class CommentService {
 
         Long totalCommentByUser = commentRepository.countRootCommentByUserId(authUser.getId(), dto.getTargetId(), dto.getTargetType());
 
-        if (totalCommentByUser < 3) {
+        if (totalCommentByUser < 10) {
             Comment comment = Comment.builder()
                     .user(authUser)
                     .content(content)

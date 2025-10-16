@@ -1,6 +1,7 @@
 package com.group4.chatapp.services;
 
 import com.group4.chatapp.dtos.UploadFileDto;
+import com.group4.chatapp.dtos.attachment.PostAttachmentResponseDto;
 import com.group4.chatapp.exceptions.ApiException;
 import com.group4.chatapp.models.Attachment;
 import com.group4.chatapp.models.Attachment.FileType;

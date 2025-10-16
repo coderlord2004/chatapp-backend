@@ -73,12 +73,16 @@ public class PostService {
 
         Invitation invitation = invitationRepository.findBySenderIdAndReceiverId(authUser.getId(), otherUser.getId());
 
-        if (invitation.isBlock()) return new ArrayList<>();
-
-        PageRequest pageRequest = PageRequest.of(page-1, 20);
         List<Post> posts;
-        if (invitation.isAccepted()) {
-            posts = postRepository.getPostsIfIsFriend(username, pageRequest);
+        PageRequest pageRequest = PageRequest.of(page-1, 20);
+        if (invitation != null) {
+            if (invitation.isBlock()) return new ArrayList<>();
+
+            if (invitation.isAccepted()) {
+                posts = postRepository.getPostsIfIsFriend(username, pageRequest);
+            } else {
+                posts = postRepository.getPostsIfIsNotFriend(username, pageRequest);
+            }
         } else {
             posts = postRepository.getPostsIfIsNotFriend(username, pageRequest);
         }
@@ -218,7 +222,7 @@ public class PostService {
     }
 
     public List<PostAttachmentResponseDto> getPostAttachments(Long postId) {
-        Post post = postRepository.findPostAndAttachment(postId);
+        Post post = getPost(postId);
         List<PostAttachmentResponseDto> responses = new ArrayList<>();
         for (Attachment attachment : post.getAttachments()) {
             List<ReactionType> topReactionTypes = getTopReactionType(attachment.getId(), ATTACHMENT);
@@ -230,15 +234,22 @@ public class PostService {
         return responses;
     }
 
+    public PostAttachmentResponseDto getPostAttachment(Long attachmentId) {
+        User authUser = userService.getUserOrThrows();
+        Attachment attachment = attachmentService.getAttachment(attachmentId);
+
+        return new PostAttachmentResponseDto(attachment.getPost().getId(), attachment, getTopReactionType(attachmentId, ATTACHMENT), getUserReaction(attachmentId, ATTACHMENT, authUser.getId()));
+    }
+
     public void increaseView(Long postId) {
         contentRepository.increaseViews(postId);
     }
 
-    public List<ReactionType> getTopReactionType(Long postId, TargetType targetType) {
-        return postRepository.getTopReactionType(postId, targetType, PageRequest.of(0, 3));
+    public List<ReactionType> getTopReactionType(Long targetId, TargetType targetType) {
+        return postRepository.getTopReactionType(targetId, targetType, PageRequest.of(0, 3));
     }
 
-    public ReactionType getUserReaction(Long postId, TargetType targetType, Long userId) {
-        return postRepository.getUserReaction(postId, targetType, userId);
+    public ReactionType getUserReaction(Long targetId, TargetType targetType, Long userId) {
+        return postRepository.getUserReaction(targetId, targetType, userId);
     }
 }

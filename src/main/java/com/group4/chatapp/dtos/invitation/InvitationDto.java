@@ -15,7 +15,8 @@ public record InvitationDto(
     @Nullable
     Long chatRoomId,
 
-    Invitation.Status status
+    Invitation.Status status,
+    Invitation.RestrictionType restriction
 ) {
 
     public InvitationDto(Invitation invitation) {
@@ -29,7 +30,8 @@ public record InvitationDto(
                 ? null
                 : invitation.getChatRoom().getId(),
 
-            invitation.getStatus()
+            invitation.getStatus(),
+            invitation.getRestriction()
         );
     }
 }

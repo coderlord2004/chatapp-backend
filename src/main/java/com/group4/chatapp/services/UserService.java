@@ -1,14 +1,18 @@
 package com.group4.chatapp.services;
 
+import com.group4.chatapp.dtos.attachment.AttachmentDto;
 import com.group4.chatapp.dtos.user.UserDto;
 import com.group4.chatapp.dtos.user.UserInformationDto;
 import com.group4.chatapp.dtos.user.UserWithAvatarDto;
 import com.group4.chatapp.dtos.user.UserWithRelationDto;
 import com.group4.chatapp.exceptions.ApiException;
 import com.group4.chatapp.mappers.UserMapper;
+import com.group4.chatapp.models.Attachment;
 import com.group4.chatapp.models.Invitation;
+import com.group4.chatapp.models.Post;
 import com.group4.chatapp.models.User;
 import com.group4.chatapp.repositories.*;
+import com.group4.chatapp.services.invitations.InvitationCheckService;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.Page;
@@ -27,6 +31,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -39,6 +44,7 @@ public class UserService {
     private InvitationRepository invitationRepository;
     private PostRepository postRepository;
     private UserMapper userMapper;
+    private InvitationCheckService invitationCheckService;
 
     private SimpMessagingTemplate messagingTemplate;
 
@@ -216,6 +222,37 @@ public class UserService {
         User authUser = getUserOrThrows();
         List<User> suggestedFriends = repository.getUserIsNotFriend(authUser.getId(), PageRequest.of(page-1, 20));
         return suggestedFriends.stream().map(userMapper::toDto).toList();
+    }
+
+    public List<AttachmentDto> getAttachmentsFromPosts(List<Post> posts) {
+        return posts.stream()
+                .flatMap(post -> post.getAttachments().stream())
+                .map(AttachmentDto::new)
+                .collect(Collectors.toList());
+    }
+
+    public List<Post> fetchPostsForUser(User authUser, User user, PageRequest pageRequest) {
+        if (Objects.equals(authUser.getId(), user.getId())) {
+            return postRepository.getPostsByAuthUser(authUser, pageRequest);
+        }
+
+        Invitation invitation = invitationCheckService.checkSenderPermission(authUser, user);
+
+        if (invitation != null && invitation.isAccepted()) {
+            return postRepository.getPostsIfIsFriend(user.getUsername(), pageRequest);
+        }
+
+        return postRepository.getPostsIfIsNotFriend(user.getUsername(), pageRequest);
+    }
+
+    public List<AttachmentDto> getUserMedias(Long userId, int page) {
+        User authUser = getUserOrThrows();
+        User user = getUserById(userId);
+
+        PageRequest pageRequest = PageRequest.of(page, 20);
+        List<Post> posts = fetchPostsForUser(authUser, user, pageRequest);
+
+        return getAttachmentsFromPosts(posts);
     }
 
     public void blockUser(Long userId) {
