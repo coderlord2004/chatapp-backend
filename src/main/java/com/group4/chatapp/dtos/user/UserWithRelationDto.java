@@ -14,7 +14,6 @@ import lombok.NoArgsConstructor;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class UserWithRelationDto {
     private InvitationDto invitation;
-    private UserWithAvatarDto userWithAvatar;
     private UserInformationDto userWithInformation;
 
     public UserWithRelationDto(User user, Long totalFollowers, Long totalFollowing, Long totalPosts, Long totalFriends, Invitation invitation) {
@@ -23,7 +22,7 @@ public class UserWithRelationDto {
         } else {
             this.invitation = new InvitationDto(invitation);
             if (invitation.isBlock()) {
-                this.userWithAvatar = new UserWithAvatarDto(user);
+                this.userWithInformation = new UserInformationDto(user);
             } else {
                 this.userWithInformation = new UserInformationDto(user, totalFollowers, totalFollowing, totalPosts, totalFriends);
             }

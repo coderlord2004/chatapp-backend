@@ -71,7 +71,7 @@ public class UserService {
     public UserInformationDto getAuthUser() {
         User user = getUserOrThrows();
         Long[] userStatistics = getUserStatistics(user.getId());
-        return new UserInformationDto(user, userStatistics[0], userStatistics[1], userStatistics[2], userStatistics[4]);
+        return new UserInformationDto(user, userStatistics[0], userStatistics[1], userStatistics[2], userStatistics[3]);
     }
 
     public Long[] getUserStatistics(Long userId) {

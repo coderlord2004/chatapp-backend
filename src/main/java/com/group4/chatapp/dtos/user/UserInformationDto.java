@@ -1,5 +1,6 @@
 package com.group4.chatapp.dtos.user;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.group4.chatapp.models.User;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,6 +10,7 @@ import java.sql.Timestamp;
 
 @Getter
 @AllArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class UserInformationDto {
     private long id;
     private String username;
@@ -37,5 +39,11 @@ public class UserInformationDto {
         this.totalFollowing = totalFollowing;
         this.totalPosts = totalPosts;
         this.totalFriends = totalFriends;
+    }
+
+    public UserInformationDto(User user) {
+        this.username = user.getUsername();
+        this.avatar = user.getAvatar();
+        this.coverPicture = user.getCoverPicture();
     }
 }
