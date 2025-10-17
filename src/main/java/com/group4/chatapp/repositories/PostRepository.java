@@ -90,4 +90,14 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             WHERE r.targetId = ?1 AND r.targetType = ?2 AND r.user.id = ?3
             """)
     ReactionType getUserReaction(Long postId, TargetType targetType, Long userId);
+
+    @Query("""
+            SELECT p
+            FROM Post p
+            LEFT JOIN FETCH p.attachments
+            WHERE LOWER(p.caption) LIKE LOWER(CONCAT('%', ?1, '%'))
+                  AND p.user.id <> ?2
+                  AND (p.visibility = 'PUBLIC' OR p.visibility = 'FRIEND')
+            """)
+    List<Post> findByCaption(String caption, Long authUserId);
 }
