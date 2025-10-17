@@ -86,7 +86,7 @@ public class PostController {
         return postService.getReactions(targetId, targetType, page-1);
     }
 
-    @PostMapping("/search/")
+    @GetMapping("/search/")
     public List<PostResponseDto> search(@RequestParam("keyword") String keyword) {
         return postService.searchByCaption(keyword);
     }

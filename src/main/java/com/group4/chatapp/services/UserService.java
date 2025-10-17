@@ -44,7 +44,6 @@ public class UserService {
     private FileTypeService fileTypeService;
     private InvitationRepository invitationRepository;
     private PostRepository postRepository;
-    private CommentRepository commentRepository;
     private UserMapper userMapper;
     private InvitationCheckService invitationCheckService;
 

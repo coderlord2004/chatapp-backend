@@ -40,6 +40,7 @@ public class PostService {
     private CommentRepository commentRepository;
     private ReactionRepository reactionRepository;
     private NotificationService notificationService;
+    private SearchHistoryService searchHistoryService;
 
     private SimpMessagingTemplate simpMessagingTemplate;
 
@@ -272,10 +273,12 @@ public class PostService {
         return postRepository.getUserReaction(targetId, targetType, userId);
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public List<PostResponseDto> searchByCaption(String keyword) {
         User authUser = userService.getUserOrThrows();
         List<Post> posts = postRepository.findByCaption(keyword, authUser.getId());
+
+        searchHistoryService.save(authUser, keyword);
 
         return posts.stream().map(post -> {
             List<ReactionType> topReactionType = getTopReactionType(post.getId(), TargetType.POST);
