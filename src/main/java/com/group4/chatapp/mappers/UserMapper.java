@@ -7,6 +7,4 @@ import org.mapstruct.Mapper;
 @Mapper(componentModel = "spring")
 public interface UserMapper {
     UserWithAvatarDto toDto(User user);
-
-    User toUser(UserWithAvatarDto userWithAvatarDto);
 }

@@ -32,57 +32,41 @@ public class ChatRoomDto {
 
     private ChatRoom.Type type;
     private Timestamp createdOn;
+    private Boolean isWaitingRoom;
 
     private MessageReceiveDto latestMessage;
     private List<MessageReceiveDto> firstMessagePage;
 
-    public ChatRoomDto(ChatRoom room,@Nullable ChatMessage latestMessage) {
+    public ChatRoomDto(ChatRoom room) {
+        this.id = room.getId();
+        this.name = room.getName();
+        this.leaderOnlySend = room.getLeaderOnlySend();
+        this.members = room.getMembers().stream().map(UserWithAvatarDto::new).toList();
+        this.type = room.getType();
+        this.createdOn = room.getCreatedOn();
+        this.isWaitingRoom = room.getIsWaitingRoom();
 
-        this(
-            room.getId(),
-            room.getName(),
-            null,
-            null,
-            room.getLeaderOnlySend(),
-            room.getMembers().stream().map(UserWithAvatarDto::new).toList(),
-            room.getType(),
-            room.getCreatedOn(),
-            null,
-            null
-        );
-
-        var avatar = room.getAvatar();
-        if (avatar != null) {
-            this.avatar = new AttachmentDto(avatar);
-        }
-        if (latestMessage != null) {
-            this.latestMessage = new MessageReceiveDto(latestMessage);
+        if (room.getAvatar() != null) {
+            this.avatar = new AttachmentDto(room.getAvatar());
         }
         if (room.getLeader() != null) {
             this.leader = new UserWithAvatarDto(room.getLeader());
         }
     }
 
-    public ChatRoomDto(ChatRoom room, List<ChatMessage> firstMessagePage) {
-        this(
-                room.getId(),
-                room.getName(),
-                null,
-                null,
-                room.getLeaderOnlySend(),
-                room.getMembers().stream().map(UserWithAvatarDto::new).toList(),
-                room.getType(),
-                room.getCreatedOn(),
-                null,
-                firstMessagePage.stream().map(MessageReceiveDto::new).toList()
-        );
-
-        var avatar = room.getAvatar();
-        if (avatar != null) {
-            this.avatar = new AttachmentDto(avatar);
+    public ChatRoomDto(ChatRoom room, @Nullable ChatMessage latestMessage) {
+        this(room);
+        if (latestMessage != null) {
+            this.latestMessage = new MessageReceiveDto(latestMessage);
         }
-        if (room.getLeader() != null) {
-            this.leader = new UserWithAvatarDto(room.getLeader());
+    }
+
+    public ChatRoomDto(ChatRoom room, List<ChatMessage> firstMessagePage) {
+        this(room);
+        if (firstMessagePage != null && !firstMessagePage.isEmpty()) {
+            this.firstMessagePage = firstMessagePage.stream()
+                    .map(MessageReceiveDto::new)
+                    .toList();
         }
     }
 }

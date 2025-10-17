@@ -22,6 +22,7 @@ public class UserInformationDto {
     @Nullable
     private String coverPicture;
     private Boolean isOnline;
+    private Timestamp lastOnline;
     private Long totalFollowers;
     private Long totalFollowing;
     private Long totalPosts;
@@ -35,6 +36,7 @@ public class UserInformationDto {
         this.avatar = user.getAvatar();
         this.coverPicture = user.getCoverPicture();
         this.isOnline = user.getIsOnline();
+        this.lastOnline = user.getLastOnline();
         this.totalFollowers = totalFollowers;
         this.totalFollowing = totalFollowing;
         this.totalPosts = totalPosts;

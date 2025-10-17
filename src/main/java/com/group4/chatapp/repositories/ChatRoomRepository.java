@@ -64,4 +64,22 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
                   AND m2.id = :otherUserId
             """)
     ChatRoom findDuoChatRoom(Long authUserId, Long otherUserId);
+
+    @Query("""
+            select new com.group4.chatapp.dtos.ChatRoomDto(r, msg)
+            from ChatRoom r
+            inner join r.members mem
+            left join ChatMessage msg on msg.room.id = r.id
+            where r.isWaitingRoom = true
+                    and mem.id = ?1
+                    and ( msg.id is null or msg.id = (
+                        select msg2.id
+                        from ChatMessage msg2
+                        where msg2.room.id = r.id
+                        order by msg2.sentOn desc, msg2.id asc
+                        limit 1
+                    )
+            )
+            """)
+    List<ChatRoomDto> findWaitingRoom(Long userId);
 }

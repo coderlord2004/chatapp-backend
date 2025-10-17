@@ -108,32 +108,37 @@ public class UserService {
         ));
     }
 
-    public List<UserWithAvatarDto> getListFriend (Long authUserId) {
-        List<Object[]> friends = repository.getListFriend(authUserId);
+    public List<User> getNonBlockingFriends(Long authUserId) {
+        User authUser = getUserOrThrows();
+        List<Object[]> friends = repository.getNonBlockingFriends(authUserId);
 
         return friends.stream().map(pair -> {
             User sender = (User) pair[0];
             User receiver = (User) pair[1];
-            User friend = Objects.equals(authUserId, sender.getId()) ? receiver : sender;
 
-            return new UserWithAvatarDto(friend);
+            return Objects.equals(authUser.getId(), sender.getId()) ? receiver : sender;
         }).toList();
     }
 
-    public List<UserWithAvatarDto> getOnlineFriends () {
+    public List<UserWithAvatarDto> getFriends () {
         User authUser = getUserOrThrows();
-        List<Object[]> friends = repository.getOnlineFriends(authUser.getId());
+        List<User> friends = getNonBlockingFriends(authUser.getId());
+        return friends.stream().map(UserWithAvatarDto::new).toList();
+    }
 
-        return friends.stream().map(pair -> {
+    public List<UserWithAvatarDto> getOnlineFriends() {
+        User authUser = getUserOrThrows();
+        List<Object[]> onlineFriends = repository.getOnlineFriends(authUser.getId());
+
+        return onlineFriends.stream().map(pair -> {
             User sender = (User) pair[0];
             User receiver = (User) pair[1];
             User friend = Objects.equals(authUser.getId(), sender.getId()) ? receiver : sender;
-
             return new UserWithAvatarDto(friend);
         }).toList();
     }
 
-    public void updateUserOnlineStatus(String username, boolean isOnline) {
+    public User updateUserOnlineStatus(String username, boolean isOnline) {
         User authUser = getUserByUsername(username);
         authUser.setIsOnline(isOnline);
         if (!isOnline) {
@@ -141,7 +146,19 @@ public class UserService {
         } else {
             authUser.setLastOnline(null);
         }
-        repository.save(authUser);
+        return repository.save(authUser);
+    }
+
+    public void updateOnlineStatusToFriend(String myName, boolean isOnline) {
+        User user = updateUserOnlineStatus(myName, isOnline);
+        List<User> friends = getNonBlockingFriends(user.getId());
+        for (User friend : friends) {
+            messagingTemplate.convertAndSendToUser(
+                    friend.getUsername(),
+                    "/queue/online-status",
+                    new UserWithAvatarDto(friend)
+            );
+        }
     }
 
     public Optional<User> getUserByAuthentication(@Nullable Authentication authentication) {
@@ -256,7 +273,7 @@ public class UserService {
         return postRepository.getPostsIfIsNotFriend(user.getUsername(), pageRequest);
     }
 
-    public List<AttachmentDto> getUserMedias(Long userId, int page) {
+    public List<AttachmentDto> getUserMedia(Long userId, int page) {
         User authUser = getUserOrThrows();
         User user = getUserById(userId);
 

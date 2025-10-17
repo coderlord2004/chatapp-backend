@@ -38,6 +38,9 @@ public class ChatRoom {
     @Builder.Default
     private Boolean leaderOnlySend = false;
 
+    @Builder.Default
+    private Boolean isWaitingRoom = false;
+
     @ManyToMany
     private Set<User> members;
 

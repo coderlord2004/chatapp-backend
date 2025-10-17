@@ -1,17 +1,16 @@
 package com.group4.chatapp.services;
 
 import com.group4.chatapp.dtos.ReactionResponseDto;
-import com.group4.chatapp.dtos.attachment.AttachmentDto;
 import com.group4.chatapp.dtos.attachment.PostAttachmentResponseDto;
 import com.group4.chatapp.dtos.post.PostRequestDto;
 import com.group4.chatapp.dtos.post.PostResponseDto;
 import com.group4.chatapp.dtos.post.SharePostDto;
-import com.group4.chatapp.dtos.user.UserWithAvatarDto;
 import com.group4.chatapp.exceptions.ApiException;
 import com.group4.chatapp.mappers.UserMapper;
 import com.group4.chatapp.models.*;
 import com.group4.chatapp.models.Enum.*;
 import com.group4.chatapp.repositories.*;
+import com.group4.chatapp.services.invitations.InvitationCheckService;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.PageRequest;
@@ -20,7 +19,6 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Stream;
 
@@ -35,6 +33,7 @@ public class PostService {
     private UserService userService;
     private UserMapper userMapper;
     private InvitationRepository invitationRepository;
+    private InvitationCheckService invitationCheckService;
     private CloudinaryService cloudinaryService;
     private ContentRepository contentRepository;
     private CommentRepository commentRepository;
@@ -121,7 +120,7 @@ public class PostService {
 
         post = postRepository.save(post);
 
-        List<User> friends = userService.getListFriend(authUser.getId()).stream().map(userMapper::toUser).toList();
+        List<User> friends = userService.getNonBlockingFriends(authUser.getId());
         Notification notification = Notification.builder()
                 .title("Bài viết mới từ bạn bè")
                 .content(authUser.getUsername() + " đã đăng một bài viết mới.")
@@ -194,15 +193,12 @@ public class PostService {
     @Transactional(readOnly = true)
     public List<PostResponseDto> getNewsFeed(int page) {
         User authUser = userService.getUserOrThrows();
-        List<UserWithAvatarDto> friends = userService.getListFriend(authUser.getId());
+        List<User> friends = userService.getNonBlockingFriends(authUser.getId());
         List<Post> latestFriendPosts = new ArrayList<>();
-        for (UserWithAvatarDto friend : friends) {
-            Invitation invitation = invitationRepository.findBySenderIdAndReceiverId(authUser.getId(), friend.getId());
-            if (!invitation.isBlock()) {
-                List<Post> posts = postRepository.getNewPostByUserId(friend.getId(), PageRequest.of(page - 1, 1));
-                if (posts != null && !posts.isEmpty() && posts.getFirst() != null) {
-                    latestFriendPosts.add(posts.getFirst());
-                }
+        for (var friend : friends) {
+            List<Post> posts = postRepository.getNewPostByUserId(friend.getId(), PageRequest.of(page - 1, 1));
+            if (posts != null && !posts.isEmpty() && posts.getFirst() != null) {
+                latestFriendPosts.add(posts.getFirst());
             }
         }
         List<Post> topPostViews = postRepository.getPostsByTopViews(authUser.getId(), PageRequest.of(page - 1, 10));

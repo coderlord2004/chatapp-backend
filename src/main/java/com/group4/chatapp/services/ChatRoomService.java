@@ -59,6 +59,15 @@ public class ChatRoomService {
         var user = userService.getUserOrThrows();
         User otherUser = userService.getUserByUsername(username);
         ChatRoom chatRoom = chatRoomRepository.findDuoChatRoom(user.getId(), otherUser.getId());
+        if (chatRoom == null) {
+            ChatRoom waitingRoom = ChatRoom.builder()
+                    .name(user.getUsername() + ", " + otherUser.getUsername())
+                    .members(new HashSet<>(List.of(user, otherUser)))
+                    .type(ChatRoom.Type.DUO)
+                    .isWaitingRoom(true)
+                    .build();
+            return new ChatRoomDto(chatRoomRepository.save(waitingRoom));
+        }
         List<ChatMessage> chatMessageStream = messageRepository.findByRoomId(
                 chatRoom.getId(),
                 PageRequest.of(0, messageRequestSize,
@@ -66,6 +75,12 @@ public class ChatRoomService {
         ));
 
         return new ChatRoomDto(chatRoom, chatMessageStream);
+    }
+
+    public List<ChatRoomDto> getWaitingRooms() {
+        User authUser = userService.getUserOrThrows();
+
+        return chatRoomRepository.findWaitingRoom(authUser.getId());
     }
 
     public ChatRoomDto createChatRoom (CreateChatRoomDto dto) {

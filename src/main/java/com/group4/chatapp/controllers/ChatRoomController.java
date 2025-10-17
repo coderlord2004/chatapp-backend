@@ -33,6 +33,11 @@ public class ChatRoomController {
         return chatRoomService.getChatRoomByUsername(username);
     }
 
+    @GetMapping("/chatrooms/waiting/")
+    public List<ChatRoomDto> getWaitingRooms() {
+        return chatRoomService.getWaitingRooms();
+    }
+
     @PostMapping("/chatroom/create/")
     public ChatRoomDto createChatRoom (@RequestBody CreateChatRoomDto dto) {
         return chatRoomService.createChatRoom(dto);

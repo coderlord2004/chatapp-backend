@@ -23,13 +23,7 @@ public class WebSocketEventListener {
         if (user != null) {
             String username = user.getName();
             System.out.println("User connected: " + username);
-            userService.updateUserOnlineStatus(username, true);
-
-            messagingTemplate.convertAndSend("/queue/online-status",
-                    Map.of(
-                            "username", username,
-                            "online", true
-                    ));
+            userService.updateOnlineStatusToFriend(username, true);
         }
     }
 
@@ -39,13 +33,7 @@ public class WebSocketEventListener {
         if (user != null) {
             String username = user.getName();
             System.out.println("User disconnected: " + username);
-            userService.updateUserOnlineStatus(username, false);
-
-            messagingTemplate.convertAndSend("/queue/online-status",
-                    Map.of(
-                            "username", username,
-                            "online", false
-                    ));
+            userService.updateOnlineStatusToFriend(username, false);
         }
     }
 }

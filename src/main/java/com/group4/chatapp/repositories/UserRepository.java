@@ -39,9 +39,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
         FROM Invitation i
         JOIN i.sender sender
         JOIN i.receiver receiver
-        WHERE i.status = 'ACCEPTED' AND (sender.id = ?1 OR receiver.id = ?1)
+        WHERE i.status = 'ACCEPTED' AND (sender.id = ?1 OR receiver.id = ?1) AND i.restriction = 'NONE'
     """)
-    List<Object[]> getListFriend (Long userId);
+    List<Object[]> getNonBlockingFriends (Long userId);
 
     @Query("""
     SELECT u

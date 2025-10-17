@@ -47,14 +47,25 @@ class MessageChangesService {
                         messageReceiveDto
                 );
 
-                messagingTemplate.convertAndSendToUser(
-                        member.getUsername(),
-                        "/queue/chat",
-                        Map.of(
-                              "roomId", chatRoom.getId(),
-                                "message", messageReceiveDto
-                        )
-                );
+                if (chatRoom.getIsWaitingRoom()) {
+                    messagingTemplate.convertAndSendToUser(
+                            member.getUsername(),
+                            "/queue/chat/waiting",
+                            Map.of(
+                                    "roomId", chatRoom.getId(),
+                                    "message", messageReceiveDto
+                            )
+                    );
+                } else {
+                    messagingTemplate.convertAndSendToUser(
+                            member.getUsername(),
+                            "/queue/chat/main",
+                            Map.of(
+                                    "roomId", chatRoom.getId(),
+                                    "message", messageReceiveDto
+                            )
+                    );
+                }
             });
     }
 

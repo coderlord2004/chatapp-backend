@@ -61,6 +61,11 @@ public class UserController {
 
     @GetMapping("/friends/")
     public List<UserWithAvatarDto> getListFriend() {
+        return userService.getFriends();
+    }
+
+    @GetMapping("/friends/online/")
+    public List<UserWithAvatarDto> getOnlineFriends() {
         return userService.getOnlineFriends();
     }
 
@@ -87,12 +92,12 @@ public class UserController {
         return userService.suggestFriend(page);
     }
 
-    @GetMapping("/medias/")
-    public List<AttachmentDto> getUserMedias(
+    @GetMapping("/media/")
+    public List<AttachmentDto> getUserMedia(
             @NotNull @RequestParam("userId") Long userId,
             @NotNull @RequestParam(value = "page", defaultValue = "1") int page
     ) {
-        return userService.getUserMedias(userId, page - 1);
+        return userService.getUserMedia(userId, page - 1);
     }
 
     @GetMapping("/comments/")
