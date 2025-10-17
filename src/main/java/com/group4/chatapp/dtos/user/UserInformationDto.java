@@ -23,8 +23,9 @@ public class UserInformationDto {
     private Long totalFollowers;
     private Long totalFollowing;
     private Long totalPosts;
+    private Long totalFriends;
 
-    public UserInformationDto(User user, Long totalFollowers, Long totalFollowing, Long totalPosts) {
+    public UserInformationDto(User user, Long totalFollowers, Long totalFollowing, Long totalPosts, Long totalFriends) {
         this.id = user.getId();
         this.username = user.getUsername();
         this.bio = user.getBio();
@@ -35,5 +36,6 @@ public class UserInformationDto {
         this.totalFollowers = totalFollowers;
         this.totalFollowing = totalFollowing;
         this.totalPosts = totalPosts;
+        this.totalFriends = totalFriends;
     }
 }

@@ -18,6 +18,10 @@ public interface ReactionRepository extends JpaRepository<Reaction, Long> {
             """)
     Reaction findByUserIdAndTargetId(Long userId, Long targetId, TargetType targetType);
 
+    List<Reaction> findByTargetIdAndTargetType(Long targetId, TargetType targetType, Pageable pageable);
+
+    void deleteByTargetIdAndTargetType(Long targetId, TargetType targetType);
+
     @Query("""
             SELECT r.reactionType, COUNT(r.reactionType)
             FROM Reaction r

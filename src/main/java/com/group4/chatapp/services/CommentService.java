@@ -3,6 +3,7 @@ package com.group4.chatapp.services;
 import com.group4.chatapp.dtos.comment.CommentRequestDto;
 import com.group4.chatapp.dtos.comment.CommentResponseDto;
 import com.group4.chatapp.dtos.comment.CommentDto;
+import com.group4.chatapp.dtos.comment.UserCommentDto;
 import com.group4.chatapp.exceptions.ApiException;
 import com.group4.chatapp.models.*;
 import com.group4.chatapp.models.Enum.NotificationType;
@@ -13,6 +14,7 @@ import com.group4.chatapp.repositories.NotificationRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -134,5 +136,15 @@ public class CommentService {
                 .build();
         contentRepository.increaseComments(parentComment.getTargetId());
         commentRepository.save(newComment);
+    }
+
+    public List<UserCommentDto> getUserComments(int page) {
+        User authUser = userService.getUserOrThrows();
+        List<Comment> comments = commentRepository.findByUserId(authUser.getId(), PageRequest.of(page, 20, Sort.by(Sort.Direction.DESC, "commentedAt")));
+
+        return comments.stream().map(comment -> {
+            User user = targetResolverService.getAuthor(comment.getTargetId(), comment.getTargetType());
+            return new UserCommentDto(comment, user);
+        }).toList();
     }
 }

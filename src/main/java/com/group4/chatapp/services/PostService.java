@@ -1,5 +1,6 @@
 package com.group4.chatapp.services;
 
+import com.group4.chatapp.dtos.ReactionResponseDto;
 import com.group4.chatapp.dtos.attachment.AttachmentDto;
 import com.group4.chatapp.dtos.attachment.PostAttachmentResponseDto;
 import com.group4.chatapp.dtos.post.PostRequestDto;
@@ -36,6 +37,8 @@ public class PostService {
     private InvitationRepository invitationRepository;
     private CloudinaryService cloudinaryService;
     private ContentRepository contentRepository;
+    private CommentRepository commentRepository;
+    private ReactionRepository reactionRepository;
     private NotificationService notificationService;
 
     private SimpMessagingTemplate simpMessagingTemplate;
@@ -138,6 +141,7 @@ public class PostService {
 
     @Transactional
     public void deletePost(Long postId) {
+        User authUser = userService.getUserOrThrows();
         Post post = getPost(postId);
         List<Attachment> attachments = post.getAttachments();
         if (attachments != null && !attachments.isEmpty()) {
@@ -151,6 +155,8 @@ public class PostService {
         if (post.getPostAttachmentType().equals(PostAttachmentType.POST)) {
             contentRepository.decreaseShares(post.getSharedPost().getId());
         }
+        commentRepository.deleteByTargetIdAndTargetType(postId, TargetType.POST);
+        reactionRepository.deleteByTargetIdAndTargetType(postId, TargetType.POST);
         postRepository.deleteById(postId);
     }
 
@@ -243,6 +249,19 @@ public class PostService {
 
     public void increaseView(Long postId) {
         contentRepository.increaseViews(postId);
+    }
+
+    public List<ReactionResponseDto> getReactions(Long targetId, TargetType targetType, int page) {
+        User authUser = userService.getUserOrThrows();
+        List<Reaction> reactions = reactionRepository.findByTargetIdAndTargetType(targetId, targetType, PageRequest.of(page, 20));
+
+        return reactions.stream().map(reaction -> {
+            ReactionType myReaction = Objects.equals(authUser.getId(), reaction.getUser().getId()) ? reaction.getReactionType() : null;
+            User user = reaction.getUser();
+            Long[] userStatistics = userService.getUserStatistics(reaction.getUser().getId());
+            Invitation invitation = invitationRepository.findBySenderIdAndReceiverId(authUser.getId(), user.getId());
+            return new ReactionResponseDto(user, userStatistics[0], userStatistics[1], userStatistics[2], userStatistics[3], invitation, myReaction);
+        }).toList();
     }
 
     public List<ReactionType> getTopReactionType(Long targetId, TargetType targetType) {

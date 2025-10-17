@@ -1,22 +1,21 @@
 package com.group4.chatapp.services;
 
 import com.group4.chatapp.dtos.attachment.AttachmentDto;
+import com.group4.chatapp.dtos.comment.UserCommentDto;
 import com.group4.chatapp.dtos.user.UserDto;
 import com.group4.chatapp.dtos.user.UserInformationDto;
 import com.group4.chatapp.dtos.user.UserWithAvatarDto;
 import com.group4.chatapp.dtos.user.UserWithRelationDto;
 import com.group4.chatapp.exceptions.ApiException;
 import com.group4.chatapp.mappers.UserMapper;
-import com.group4.chatapp.models.Attachment;
-import com.group4.chatapp.models.Invitation;
-import com.group4.chatapp.models.Post;
-import com.group4.chatapp.models.User;
+import com.group4.chatapp.models.*;
 import com.group4.chatapp.repositories.*;
 import com.group4.chatapp.services.invitations.InvitationCheckService;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.lang.Nullable;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -45,6 +44,7 @@ public class UserService {
     private FileTypeService fileTypeService;
     private InvitationRepository invitationRepository;
     private PostRepository postRepository;
+    private CommentRepository commentRepository;
     private UserMapper userMapper;
     private InvitationCheckService invitationCheckService;
 
@@ -71,17 +71,16 @@ public class UserService {
 
     public UserInformationDto getAuthUser() {
         User user = getUserOrThrows();
-        Long totalFollowers = invitationRepository.countFollowersByUserId(user.getId());
-        Long totalFollowing = invitationRepository.countFollowingByUserId(user.getId());
-        Long totalPosts = postRepository.countPostByUserId(user.getId());
-        return new UserInformationDto(user, totalFollowers, totalFollowing, totalPosts);
+        Long[] userStatistics = getUserStatistics(user.getId());
+        return new UserInformationDto(user, userStatistics[0], userStatistics[1], userStatistics[2], userStatistics[4]);
     }
 
     public Long[] getUserStatistics(Long userId) {
         Long totalFollowers = invitationRepository.countFollowersByUserId(userId);
         Long totalFollowing = invitationRepository.countFollowingByUserId(userId);
         Long totalPosts = postRepository.countPostByUserId(userId);
-        return new Long[]{totalFollowers, totalFollowing, totalPosts};
+        Long totalFriends = invitationRepository.countFriendsByUserId(userId);
+        return new Long[]{totalFollowers, totalFollowing, totalPosts, totalFriends};
     }
 
     public UserWithRelationDto getUser(String username) {
@@ -93,7 +92,7 @@ public class UserService {
         Invitation invitation = invitationRepository.findBySenderIdAndReceiverId(authUser.getId(), user.getId());
 
         Long[] userStatistics = getUserStatistics(user.getId());
-        return new UserWithRelationDto(user, userStatistics[0], userStatistics[1], userStatistics[2], invitation);
+        return new UserWithRelationDto(user, userStatistics[0], userStatistics[1], userStatistics[2], userStatistics[3], invitation);
     }
 
     public User getUserById(Long userId) {
@@ -195,7 +194,7 @@ public class UserService {
             User user = (User) result[0];
             Long[] userStatistics = getUserStatistics(user.getId());
             Invitation invitation = (Invitation) result[1];
-            UserWithRelationDto userWithRelationDto = new UserWithRelationDto(user, userStatistics[0], userStatistics[1], userStatistics[2], invitation);
+            UserWithRelationDto userWithRelationDto = new UserWithRelationDto(user, userStatistics[0], userStatistics[1], userStatistics[2], userStatistics[3], invitation);
             responses.add(userWithRelationDto);
         }
         return responses;

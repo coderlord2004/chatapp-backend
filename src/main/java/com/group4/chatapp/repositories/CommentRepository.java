@@ -16,6 +16,8 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
             """)
     Long getTotalComments(Long targetId, TargetType targetType);
 
+    List<Comment> findByUserId(Long userId, Pageable pageable);
+
     @Query("""
             SELECT c, COUNT(child.id) AS totalChildComments
             FROM Comment c
@@ -40,4 +42,6 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
             WHERE c.user.id = ?1 AND c.targetId = ?2 AND c.targetType = ?3 AND c.parentComment IS NULL
             """)
     Long countRootCommentByUserId(Long userId, Long postId, TargetType targetType);
+
+    void deleteByTargetIdAndTargetType(Long targetId, TargetType targetType);
 }

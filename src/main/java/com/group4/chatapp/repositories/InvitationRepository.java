@@ -71,5 +71,12 @@ public interface InvitationRepository extends JpaRepository<Invitation, Long> {
             """)
     Long countFollowingByUserId(Long userId);
 
+    @Query("""
+            SELECT COUNT(i)
+            FROM Invitation i
+            WHERE i.sender.id = ?1 AND i.status = 'ACCEPTED'
+            """)
+    Long countFriendsByUserId(Long userId);
+
     Invitation findBySenderIdAndReceiverId(Long authUserId, Long otherUserId);
 }

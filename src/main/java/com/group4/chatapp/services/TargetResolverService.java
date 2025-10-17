@@ -22,6 +22,7 @@ public class TargetResolverService {
     public User getAuthor(Long targetId, TargetType targetType) {
         User targetAuthor = null;
         if (targetType.equals(TargetType.POST)) {
+            System.out.println("post id: " + targetId);
             Post post = postService.getPost(targetId);
             targetAuthor = post.getUser();
         } else if (targetType.equals(TargetType.ATTACHMENT)) {

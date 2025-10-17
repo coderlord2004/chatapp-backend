@@ -1,6 +1,7 @@
 package com.group4.chatapp.controllers;
 
 import com.group4.chatapp.dtos.attachment.AttachmentDto;
+import com.group4.chatapp.dtos.comment.UserCommentDto;
 import com.group4.chatapp.dtos.token.TokenObtainPairDto;
 import com.group4.chatapp.dtos.token.TokenRefreshDto;
 import com.group4.chatapp.dtos.token.TokenRefreshRequestDto;
@@ -8,6 +9,7 @@ import com.group4.chatapp.dtos.user.UserDto;
 import com.group4.chatapp.dtos.user.UserInformationDto;
 import com.group4.chatapp.dtos.user.UserWithAvatarDto;
 import com.group4.chatapp.dtos.user.UserWithRelationDto;
+import com.group4.chatapp.services.CommentService;
 import com.group4.chatapp.services.JwtsService;
 import com.group4.chatapp.services.UserService;
 import jakarta.validation.Valid;
@@ -27,6 +29,7 @@ import java.util.Map;
 public class UserController {
     private final UserService userService;
     private final JwtsService jwtsService;
+    private final CommentService commentService;
 
     @PostMapping("/register/")
     @ResponseStatus(HttpStatus.CREATED)
@@ -90,6 +93,11 @@ public class UserController {
             @NotNull @RequestParam(value = "page", defaultValue = "1") int page
     ) {
         return userService.getUserMedias(userId, page - 1);
+    }
+
+    @GetMapping("/comments/")
+    public List<UserCommentDto> getUserComments(@RequestParam("page") int page) {
+        return commentService.getUserComments(page - 1);
     }
 
     @PostMapping("/block/")

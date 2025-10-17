@@ -3,6 +3,7 @@ package com.group4.chatapp.controllers;
 import com.group4.chatapp.dtos.comment.CommentRequestDto;
 import com.group4.chatapp.dtos.comment.CommentResponseDto;
 import com.group4.chatapp.dtos.comment.CommentDto;
+import com.group4.chatapp.dtos.comment.UserCommentDto;
 import com.group4.chatapp.models.Enum.TargetType;
 import com.group4.chatapp.services.CommentService;
 import jakarta.validation.Valid;

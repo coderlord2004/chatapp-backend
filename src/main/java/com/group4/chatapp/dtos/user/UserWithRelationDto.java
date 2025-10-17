@@ -17,15 +17,15 @@ public class UserWithRelationDto {
     private UserWithAvatarDto userWithAvatar;
     private UserInformationDto userWithInformation;
 
-    public UserWithRelationDto(User user, Long totalFollowers, Long totalFollowing, Long totalPosts, Invitation invitation) {
+    public UserWithRelationDto(User user, Long totalFollowers, Long totalFollowing, Long totalPosts, Long totalFriends, Invitation invitation) {
         if (invitation == null) {
-            this.userWithInformation = new UserInformationDto(user, totalFollowers, totalFollowing, totalPosts);
+            this.userWithInformation = new UserInformationDto(user, totalFollowers, totalFollowing, totalPosts, totalFriends);
         } else {
             this.invitation = new InvitationDto(invitation);
             if (invitation.isBlock()) {
                 this.userWithAvatar = new UserWithAvatarDto(user);
             } else {
-                this.userWithInformation = new UserInformationDto(user, totalFollowers, totalFollowing, totalPosts);
+                this.userWithInformation = new UserInformationDto(user, totalFollowers, totalFollowing, totalPosts, totalFriends);
             }
         }
     }

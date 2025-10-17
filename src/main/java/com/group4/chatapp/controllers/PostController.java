@@ -1,9 +1,11 @@
 package com.group4.chatapp.controllers;
 
+import com.group4.chatapp.dtos.ReactionResponseDto;
 import com.group4.chatapp.dtos.attachment.PostAttachmentResponseDto;
 import com.group4.chatapp.dtos.post.PostRequestDto;
 import com.group4.chatapp.dtos.post.PostResponseDto;
 import com.group4.chatapp.dtos.post.SharePostDto;
+import com.group4.chatapp.models.Enum.TargetType;
 import com.group4.chatapp.repositories.PostRepository;
 import com.group4.chatapp.services.PostService;
 import jakarta.validation.Valid;
@@ -73,5 +75,14 @@ public class PostController {
     @PostMapping("/view/increase/")
     public void increaseView(@NotNull @RequestParam("postId") Long postId) {
         postService.increaseView(postId);
+    }
+
+    @GetMapping("/reactions/")
+    public List<ReactionResponseDto> getReactions(
+            @RequestParam("targetId") Long targetId,
+            @RequestParam("targetType") TargetType targetType,
+            @RequestParam(value = "page", defaultValue = "1") int page
+    ) {
+        return postService.getReactions(targetId, targetType, page-1);
     }
 }
