@@ -54,7 +54,7 @@ public class ChatRoomService {
         return chatRoomRepository.findWithLatestMessage(user.getId());
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public ChatRoomDto getChatRoomByUsername(String username) {
         var user = userService.getUserOrThrows();
         User otherUser = userService.getUserByUsername(username);
@@ -90,7 +90,7 @@ public class ChatRoomService {
         members.add(authUser);
 
         dto.getMembers().forEach(username -> {
-            User user = userRepository.findByUsername(username).orElseThrow(() -> new RuntimeException(username + " not found!"));
+            User user = userService.getUserByUsername(username);
             members.add(user);
         });
 
@@ -108,7 +108,7 @@ public class ChatRoomService {
                     "/queue/chatroom/create",
                     Map.of(
                             "sender", authUser.getUsername(),
-                            "chatRoom", chatRoom
+                            "chatRoom", new ChatRoomDto(chatRoom)
                     )
             );
         }

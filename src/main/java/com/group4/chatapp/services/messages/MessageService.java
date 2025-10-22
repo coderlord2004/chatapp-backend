@@ -3,7 +3,9 @@ package com.group4.chatapp.services.messages;
 import com.group4.chatapp.dtos.messages.MessageReceiveDto;
 import com.group4.chatapp.dtos.messages.MessageSendDto;
 import com.group4.chatapp.dtos.messages.MessageSendResponseDto;
+import com.group4.chatapp.models.User;
 import com.group4.chatapp.repositories.MessageRepository;
+import com.group4.chatapp.services.UserService;
 import jakarta.transaction.Transactional;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +27,7 @@ public class MessageService {
     private final MessageChangesService sendService;
     private final MessageCheckService checkService;
     private final MessageRepository messageRepository;
+    private final UserService userService;
 
     @Value("${messages.max-request}")
     private int messageRequestSize;
@@ -38,8 +41,8 @@ public class MessageService {
                 "Page mustn't less than 1!"
             );
         }
-
-        checkService.receiveChatRoomAndCheck(roomId);
+        User authUser = userService.getUserOrThrows();
+        checkService.checkExistInRoom(authUser.getId(), roomId);
 
         var pageRequest = PageRequest.of(
             page - 1, messageRequestSize,

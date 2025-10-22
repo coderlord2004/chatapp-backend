@@ -63,7 +63,15 @@ public interface PostRepository extends JpaRepository<Post, Long> {
            SELECT p
            FROM Post p
            LEFT JOIN FETCH p.attachments
-           WHERE p.totalViews >= 0 AND p.user.id <> ?1
+           INNER JOIN p.user u
+           LEFT JOIN Invitation i
+                ON ((i.sender.id = ?1 AND i.receiver.id = u.id)
+                    OR (i.sender.id = u.id AND i.receiver.id = ?1))
+           WHERE p.totalViews >= 0
+                AND p.visibility <> 'PRIVATE'
+                AND p.status = 'PUBLISHED'
+                AND p.user.id <> ?1
+                AND (i IS NULL OR i.restriction = 'NONE')
            ORDER BY p.totalViews DESC
            """)
     List<Post> getPostsByTopViews(Long authUserId, Pageable pageable);

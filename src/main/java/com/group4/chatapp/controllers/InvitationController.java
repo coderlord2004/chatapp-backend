@@ -37,7 +37,6 @@ public class InvitationController {
     }
 
     @PatchMapping("/{invitationId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
     public ReplyResponse replyInvitation(
         @PathVariable long invitationId,
         @Valid @RequestBody InvitationReplyDto dto

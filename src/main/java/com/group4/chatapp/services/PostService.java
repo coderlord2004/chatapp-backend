@@ -6,7 +6,6 @@ import com.group4.chatapp.dtos.post.PostRequestDto;
 import com.group4.chatapp.dtos.post.PostResponseDto;
 import com.group4.chatapp.dtos.post.SharePostDto;
 import com.group4.chatapp.exceptions.ApiException;
-import com.group4.chatapp.mappers.UserMapper;
 import com.group4.chatapp.models.*;
 import com.group4.chatapp.models.Enum.*;
 import com.group4.chatapp.repositories.*;
@@ -31,7 +30,6 @@ public class PostService {
     private AttachmentService attachmentService;
     private PostRepository postRepository;
     private UserService userService;
-    private UserMapper userMapper;
     private InvitationRepository invitationRepository;
     private InvitationCheckService invitationCheckService;
     private CloudinaryService cloudinaryService;

@@ -30,6 +30,16 @@ public class MessageCheckService {
     private InvitationService invitationService;
     private InvitationCheckService invitationCheckService;
 
+    public void checkExistInRoom(long userId, long roomId) {
+        var userInChatRoom = chatRoomRepository.userIsMemberInChatRoom(userId, roomId);
+        if (!userInChatRoom) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "You aren't in this room!"
+            );
+        }
+    }
+
     public ChatRoom receiveChatRoomAndCheck(long id, User user) {
 
         var chatRoom = chatRoomService.getChatRoom(id);
@@ -47,14 +57,8 @@ public class MessageCheckService {
             User otherUser = members.get(1);
             invitationCheckService.checkSenderPermission(authUser, otherUser);
         }
-        var userInChatRoom = chatRoomRepository.userIsMemberInChatRoom(user.getId(), id);
-        if (!userInChatRoom) {
-            throw new ResponseStatusException(
-                HttpStatus.FORBIDDEN,
-                "You aren't in this room!"
-            );
-        }
 
+        checkExistInRoom(user.getId(), id);
         return chatRoom;
     }
 

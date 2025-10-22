@@ -39,7 +39,7 @@ public class ChatRoom {
     private Boolean leaderOnlySend = false;
 
     @Builder.Default
-    private Boolean isWaitingRoom = false;
+    private boolean isWaitingRoom = false;
 
     @ManyToMany
     private Set<User> members;

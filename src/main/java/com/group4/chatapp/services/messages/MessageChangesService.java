@@ -47,7 +47,7 @@ class MessageChangesService {
                         messageReceiveDto
                 );
 
-                if (chatRoom.getIsWaitingRoom()) {
+                if (chatRoom.isWaitingRoom()) {
                     messagingTemplate.convertAndSendToUser(
                             member.getUsername(),
                             "/queue/chat/waiting",

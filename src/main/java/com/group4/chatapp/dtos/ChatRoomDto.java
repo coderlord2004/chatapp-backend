@@ -32,7 +32,7 @@ public class ChatRoomDto {
 
     private ChatRoom.Type type;
     private Timestamp createdOn;
-    private Boolean isWaitingRoom;
+    private boolean isWaitingRoom;
 
     private MessageReceiveDto latestMessage;
     private List<MessageReceiveDto> firstMessagePage;
@@ -44,7 +44,7 @@ public class ChatRoomDto {
         this.members = room.getMembers().stream().map(UserWithAvatarDto::new).toList();
         this.type = room.getType();
         this.createdOn = room.getCreatedOn();
-        this.isWaitingRoom = room.getIsWaitingRoom();
+        this.isWaitingRoom = room.isWaitingRoom();
 
         if (room.getAvatar() != null) {
             this.avatar = new AttachmentDto(room.getAvatar());
