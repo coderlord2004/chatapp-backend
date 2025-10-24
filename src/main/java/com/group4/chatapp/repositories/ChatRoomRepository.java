@@ -1,6 +1,7 @@
 package com.group4.chatapp.repositories;
 
 import com.group4.chatapp.dtos.ChatRoomDto;
+import com.group4.chatapp.dtos.user.UserWithAvatarDto;
 import com.group4.chatapp.models.ChatRoom;
 import com.group4.chatapp.models.User;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -30,12 +31,12 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
     List<ChatRoomDto> findWithLatestMessage(long userId);
 
     @Query("""
-        SELECT members.username
+        SELECT new com.group4.chatapp.dtos.user.UserWithAvatarDto(members)
         FROM ChatRoom c
         INNER JOIN c.members members
         WHERE c.id = ?1
     """)
-    List<String> findChatRoomWithUsername (long roomId);
+    List<UserWithAvatarDto> findChatRoomWithUsername (long roomId);
 
     @Query("""
         select (count(c) > 0)

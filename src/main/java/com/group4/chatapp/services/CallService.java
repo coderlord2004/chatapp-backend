@@ -3,6 +3,7 @@ package com.group4.chatapp.services;
 import com.group4.chatapp.dtos.ChatRoomDto;
 import com.group4.chatapp.dtos.callInvitation.CallInvitationResponseDto;
 import com.group4.chatapp.dtos.callInvitation.CallInvitationSendDto;
+import com.group4.chatapp.dtos.callInvitation.CancelCallInvitationDto;
 import com.group4.chatapp.dtos.user.UserWithAvatarDto;
 import com.group4.chatapp.models.ChatRoom;
 import com.group4.chatapp.models.User;
@@ -31,19 +32,19 @@ public class CallService {
 
     public void sendInvitationToChannel (CallInvitationSendDto dto) {
         User authUser = userService.getUserOrThrows();
-        List<String> membersUsername = chatRoomRepository.findChatRoomWithUsername(dto.getChannelId());
+        List<UserWithAvatarDto> members = chatRoomRepository.findChatRoomWithUsername(dto.getChannelId());
 
         CallInvitationResponseDto callInvitationResponseDto = CallInvitationResponseDto.builder()
                 .channelId(dto.getChannelId())
                 .caller(new UserWithAvatarDto(authUser))
-                .membersUsername(membersUsername)
+                .members(members)
                 .isUseVideo(dto.getIsUseVideo())
                 .build();
 
-        membersUsername.forEach(username -> {
-            if (!username.equals(authUser.getUsername())) {
+        members.forEach(user -> {
+            if (!user.getUsername().equals(authUser.getUsername())) {
                 messagingTemplate.convertAndSendToUser(
-                        username,
+                        user.getUsername(),
                         "/queue/send_call_invitation",
                         callInvitationResponseDto
                 );
@@ -51,15 +52,25 @@ public class CallService {
         });
     }
 
-    public void cancelCallInvitation () {
+    public void cancelCallInvitation (CancelCallInvitationDto dto) {
+        User authUser = userService.getUserOrThrows();
+        List<UserWithAvatarDto> members = chatRoomRepository.findChatRoomWithUsername(dto.getChannelId());
 
+        members.forEach(user -> {
+            if (!user.getUsername().equals(authUser.getUsername())) {
+                messagingTemplate.convertAndSendToUser(
+                        user.getUsername(),
+                        "/queue/cancel_call_invitation",
+                        Map.of("sender", authUser.getUsername())
+                );
+            }
+        });
     }
 
     public void refuseCallInvitation (String caller) {
         User authUser = userService.getUserOrThrows();
         Map<String, Object> response = Map.of(
-                "sender", authUser.getUsername(),
-                "receiver", caller
+                "sender", authUser.getUsername()
         );
 
         messagingTemplate.convertAndSendToUser(

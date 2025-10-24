@@ -18,6 +18,6 @@ import java.util.Map;
 public class CallInvitationResponseDto {
     private Long channelId;
     private UserWithAvatarDto caller;
-    private List<String> membersUsername;
+    private List<UserWithAvatarDto> members;
     private Boolean isUseVideo;
 }

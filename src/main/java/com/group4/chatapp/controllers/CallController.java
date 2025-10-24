@@ -1,6 +1,7 @@
 package com.group4.chatapp.controllers;
 
 import com.group4.chatapp.dtos.callInvitation.CallInvitationSendDto;
+import com.group4.chatapp.dtos.callInvitation.CancelCallInvitationDto;
 import com.group4.chatapp.services.CallService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
@@ -23,8 +24,8 @@ public class CallController {
     }
 
     @PostMapping("/invitation/cancel/")
-    public void cancelCallInvitation(@RequestBody CallInvitationSendDto dto) {
-        callService.cancelCallInvitation();
+    public void cancelCallInvitation(@RequestBody CancelCallInvitationDto dto) {
+        callService.cancelCallInvitation(dto);
     }
 
     @PostMapping("/invitation/refuse/")
